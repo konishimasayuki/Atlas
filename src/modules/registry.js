@@ -5,6 +5,7 @@ import HrModule from "./hr/index.jsx";
 import InventoryModule from "./inventory/index.jsx";
 import GaModule from "./ga/index.jsx";
 import AccountingModule from "./accounting/index.jsx";
+import PayrollModule from "./payroll/index.jsx";
 
 export const MODULE_COMPONENTS = {
   sales: SalesModule,
@@ -12,4 +13,5 @@ export const MODULE_COMPONENTS = {
   inventory: InventoryModule,
   ga: GaModule,
   accounting: AccountingModule,
+  payroll: PayrollModule,
 };

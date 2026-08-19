@@ -469,3 +469,27 @@ body{
 }
 .asset-bv b{font-family:ui-monospace,monospace;font-size:15px}
 .asset-bv .muted{display:block;font-size:11px;margin-top:3px}
+
+/* ===== 追加: 労務・給与 ===== */
+.pay-runbar{display:flex;align-items:flex-end;gap:12px;margin-bottom:12px}
+.pay-runbar .fld input{padding:10px 12px}
+.pay-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+.pt-item{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center}
+.pt-item.net{background:#fbeef0;border-color:#e0b4ba}
+.pt-l{display:block;font-size:11px;color:var(--muted)}
+.pt-v{display:block;font-size:16px;font-weight:800;font-family:ui-monospace,monospace;margin-top:3px}
+.pt-item.net .pt-v{color:#B23A48}
+
+.payslip{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px;margin-bottom:10px}
+.ps-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid var(--line)}
+.ps-ym{font-family:ui-monospace,monospace;font-weight:700;color:var(--ink-2)}
+.ps-sec{font-size:12px;font-weight:700;color:#B23A48;margin:14px 0 6px;border-left:3px solid #B23A48;padding-left:8px}
+.ps-row{display:flex;justify-content:space-between;padding:6px 4px;font-size:14px;border-bottom:1px dashed var(--line)}
+.ps-row span:last-child{font-family:ui-monospace,monospace}
+.ps-row.strong{font-weight:800;border-bottom:1px solid var(--line-2)}
+.ps-net{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:14px;background:#B23A48;color:#fff;border-radius:11px;font-weight:800;font-size:16px}
+.ps-net span:last-child{font-family:ui-monospace,monospace;font-size:20px}
+
+.bonus-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 13px}
+.bonus-info{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+@media(max-width:600px){ .pay-totals{grid-template-columns:1fr 1fr} }
