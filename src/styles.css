@@ -343,3 +343,129 @@ body{
   padding:14px 0 4px;margin-top:16px;background:linear-gradient(transparent,var(--bg) 40%);
 }
 .st-actions .btn-ghost,.st-actions .btn-primary{width:auto}
+
+/* ===== 追加: eラーニング ===== */
+.course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.course-card{
+  text-align:left;cursor:pointer;background:#fff;border:1px solid var(--line);
+  border-top:4px solid var(--cc);border-radius:13px;padding:15px;font-family:inherit;
+  display:flex;flex-direction:column;gap:7px;transition:box-shadow .15s;
+}
+.course-card:hover{box-shadow:0 10px 24px -16px rgba(20,30,50,.5)}
+.course-top{display:flex;align-items:center;gap:7px}
+.course-cat{font-size:11px;font-weight:700;color:#fff;background:var(--cc);border-radius:5px;padding:2px 9px}
+.course-level{font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:5px;padding:1px 7px}
+.course-done{margin-left:auto;font-size:11px;font-weight:700;color:#0B6E52;background:#E3F4EC;border:1px solid #a9d9c6;border-radius:999px;padding:2px 9px}
+.course-title{font-weight:800;font-size:16px}
+.course-desc{font-size:12.5px;color:var(--ink-2);line-height:1.6;flex:1}
+.course-meta{font-size:11.5px;color:var(--muted)}
+.prog-bar{height:7px;background:#EEF2F8;border-radius:999px;overflow:hidden}
+.prog-fill{display:block;height:100%;background:var(--cc);border-radius:999px;transition:width .3s}
+.prog-label{font-size:11px;color:var(--muted);text-align:right;font-family:ui-monospace,monospace}
+
+/* 受講プレイヤー */
+.lesson-steps{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.step-dot{
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--line-2);background:#fff;
+  font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-2);font-family:inherit;
+}
+.step-dot.quiz{width:auto;border-radius:999px;padding:0 14px}
+.step-dot.cur{border-color:var(--accent);background:var(--accent);color:#fff}
+.step-dot.done{border-color:#0B6E52;color:#0B6E52}
+.step-dot.done.cur{background:#0B6E52;color:#fff}
+.lesson-body,.quiz-body{background:#fff;border:1px solid var(--line);border-radius:13px;padding:20px}
+.lesson-title{font-size:17px;margin:0 0 12px}
+.lesson-text{font-size:14.5px;line-height:1.9;color:var(--ink-2);white-space:pre-wrap}
+.lesson-video{display:inline-block;margin-bottom:12px;font-size:13px;font-weight:700;color:#B23A48}
+.lesson-nav{display:flex;gap:10px;margin-top:18px}
+.lesson-nav .btn-ghost,.lesson-nav .btn-primary{width:auto}
+.lesson-nav .btn-primary{margin-left:auto}
+
+.quiz-q{border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:11px;background:#FBFCFE}
+.qq{font-weight:700;font-size:14.5px;margin-bottom:10px}
+.qq-choices{display:flex;flex-direction:column;gap:7px}
+.qq-choice{display:flex;align-items:center;gap:9px;border:1px solid var(--line-2);border-radius:9px;padding:10px 12px;cursor:pointer;font-size:14px}
+.qq-choice.on{border-color:var(--accent);background:#EAF0F9;font-weight:700}
+.qq-choice input{accent-color:var(--accent);width:18px;height:18px}
+.quiz-result{text-align:center;padding:20px}
+.qr-score{font-size:44px;font-weight:900;font-family:ui-monospace,monospace}
+.quiz-result.pass .qr-score{color:#0B6E52}
+.quiz-result.fail .qr-score{color:#B23A48}
+.qr-score small{font-size:16px;margin-left:2px}
+
+/* ===== 追加: 経費精算 ===== */
+.feat-badge{margin-left:auto;font-size:11px;font-weight:700;color:#fff;background:#B23A48;border-radius:999px;padding:3px 10px}
+.status.st-draft{color:var(--muted);background:#f0f2f5;border:1px solid var(--line-2)}
+.status.st-settled{color:#334155;background:#e6eaf0;border:1px solid #b9c4d4}
+
+.exp-lines{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.exp-line{border:1px solid var(--line);border-radius:12px;padding:14px;background:#FBFCFE}
+.exp-line-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.exp-line-no{font-weight:700;font-size:13px;color:var(--ink-2)}
+.fuel-toggle{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);cursor:pointer}
+.fuel-toggle input{width:18px;height:18px;accent-color:#0B6E52}
+.line-del{margin-left:auto;width:28px;height:28px;border-radius:8px;border:1px solid var(--line-2);background:#fff;cursor:pointer;font-size:16px;color:var(--muted)}
+.calc-amount{font-size:18px;font-weight:800;color:#0B6E52;font-family:ui-monospace,monospace;padding:8px 0}
+.receipt-cell{display:flex;align-items:center;gap:10px}
+.receipt-btn{display:inline-block;font-size:12.5px;font-weight:700;color:#0B6E52;border:1px dashed #0B6E52;border-radius:8px;padding:8px 12px;cursor:pointer}
+.receipt-thumb{width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--line-2);cursor:pointer}
+.receipt-thumb.sm{width:38px;height:38px}
+.receipt-zoom{max-width:92vw;max-height:88vh;border-radius:10px}
+.exp-total{text-align:right;font-size:16px;margin:16px 0 4px}
+.exp-total b{font-size:22px;color:#0B6E52;font-family:ui-monospace,monospace;margin-left:8px}
+
+.exp-detail-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.exp-detail-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.edr-main{display:flex;align-items:center;gap:9px;min-width:0;flex-wrap:wrap}
+.edr-cat{font-size:11px;font-weight:700;color:#0B6E52;background:#E3F4EC;border:1px solid #a9d9c6;border-radius:5px;padding:2px 8px}
+.edr-desc{font-size:13.5px;color:var(--ink)}
+.edr-fuel{font-size:11px;color:var(--muted);font-family:ui-monospace,monospace}
+.edr-right{display:flex;align-items:center;gap:10px;flex:none}
+.edr-amount{font-weight:700;font-family:ui-monospace,monospace}
+.exp-history{background:#FBFCFE;border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:14px}
+.hist-row{font-size:12.5px;color:var(--ink-2);padding:3px 0}
+
+/* ===== 追加: ストレスチェック ===== */
+.sc-self{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px;margin-bottom:16px}
+.sc-self-head{font-weight:700;font-size:15px;margin-bottom:12px}
+.sc-bars{display:flex;flex-direction:column;gap:9px}
+.sc-bar-row{display:flex;align-items:center;gap:10px}
+.sc-bar-label{font-size:12.5px;color:var(--ink-2);width:110px;flex:none}
+.sc-bar-track{flex:1;height:10px;background:#EEF2F8;border-radius:999px;overflow:hidden}
+.sc-bar-fill{display:block;height:100%;border-radius:999px;transition:width .4s}
+.sc-bar-val{font-family:ui-monospace,monospace;font-weight:700;font-size:13px;width:32px;text-align:right}
+.sc-verdict{margin-top:14px;font-size:13.5px;border-radius:9px;padding:11px 14px}
+.sc-verdict.ok{color:#0B6E52;background:#E3F4EC;border:1px solid #a9d9c6}
+.sc-verdict.high{color:#B23A48;background:#fbeef0;border:1px solid #e0b4ba}
+
+.sc-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.sc-kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.sc-kpi.warn{border-color:#e0b4ba;background:#fbeef0}
+.sk-v{display:block;font-size:26px;font-weight:900;font-family:ui-monospace,monospace;color:var(--ink)}
+.sc-kpi.warn .sk-v{color:#B23A48}
+.sk-l{display:block;font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+.sc-dept,.sc-high{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.sc-dept-row{display:flex;align-items:center;gap:10px;padding:5px 0}
+.sc-dept-name{font-size:13px;width:130px;flex:none}
+.sc-dept-val{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);width:44px;text-align:right}
+.sc-high-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.sc-high-row:last-of-type{border-bottom:0}
+
+.sc-section{margin-bottom:18px}
+.sc-section-h{font-weight:700;font-size:14px;color:var(--accent);border-left:4px solid #6A34A0;padding-left:10px;margin-bottom:10px}
+.sc-q{background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px;margin-bottom:9px}
+.sc-q-text{font-size:14px;margin-bottom:10px}
+.sc-choices{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sc-choice{display:flex;align-items:center;gap:7px;border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font-size:12.5px;cursor:pointer}
+.sc-choice.on{border-color:#6A34A0;background:#F2EAFB;font-weight:700}
+.sc-choice input{accent-color:#6A34A0}
+@media(max-width:560px){ .sc-kpis{grid-template-columns:1fr} .sc-choices{grid-template-columns:1fr} .sc-bar-label{width:88px} }
+
+/* ===== 追加: 資産・備品管理 ===== */
+.asset-bv{
+  margin-top:6px;font-size:13px;background:#eef4f7;border:1px solid #cfe0e8;
+  border-radius:9px;padding:11px 13px;color:#1d4f63;
+}
+.asset-bv b{font-family:ui-monospace,monospace;font-size:15px}
+.asset-bv .muted{display:block;font-size:11px;margin-top:3px}

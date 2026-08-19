@@ -14,6 +14,10 @@ export const hrKey = {
   employee: (t, id) => `atlas:${t}:hr:employee:${id}`,
   employees: (t) => `atlas:${t}:hr:employees`,
   seq: (t) => `atlas:${t}:hr:seq:employee`,
+  // ストレスチェック：1回答＝1社員×1実施回
+  scResult: (t, round, empId) => `atlas:${t}:hr:sc:${round}:${empId}`,
+  scResults: (t, round) => `atlas:${t}:hr:sc:${round}:members`,
+  scRounds: (t) => `atlas:${t}:hr:sc:rounds`,
 };
 
 export function pad4(n) {

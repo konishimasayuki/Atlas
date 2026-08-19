@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import EmployeeBook from "./EmployeeBook.jsx";
+import StressCheck from "./StressCheck.jsx";
 
 const FEATURES = [
   { id: "book",   no: "1", label: "人事台帳", desc: "社員プロフィール・スキルの管理", ready: true },
   { id: "attend", no: "2", label: "勤怠・シフト", desc: "打刻・シフト・36協定（近日）", ready: false },
-  { id: "stress", no: "3", label: "ストレスチェック", desc: "診断・要因可視化（近日）", ready: false },
+  { id: "stress", no: "3", label: "ストレスチェック", desc: "受検・高ストレス者判定・部署別集計", ready: true },
   { id: "org",    no: "4", label: "組織図", desc: "部署・役割の可視化（近日）", ready: false },
 ];
 
@@ -27,6 +28,9 @@ export default function HrModule() {
 
   if (view === "book") {
     return <EmployeeBook onBack={() => { setView("dashboard"); loadCount(); }} />;
+  }
+  if (view === "stress") {
+    return <StressCheck onBack={() => setView("dashboard")} />;
   }
 
   return (
