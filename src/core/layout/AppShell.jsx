@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { MODULES } from "../modules.js";
 import UsersPage from "../settings/UsersPage.jsx";
+import { MODULE_COMPONENTS } from "../../modules/registry.js";
 
 export default function AppShell() {
   const { user, logout } = useAuth();
-  // 実際に使える画面 = 会社契約 ∩ 本人許可（サーバで計算済みの effectiveModules）
   const visible = MODULES.filter((m) => user.effectiveModules.includes(m.id));
   const [active, setActive] = useState(visible[0]?.id || null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,37 +43,40 @@ export default function AppShell() {
         {menuOpen && <div className="nav-scrim" onClick={() => setMenuOpen(false)} />}
 
         <main className="content">
-          {active === "settings" ? <SettingsView /> : <ModulePlaceholder module={cur} />}
+          <ModuleView moduleId={active} module={cur} />
         </main>
       </div>
     </div>
   );
 }
 
-function SettingsView() {
+function ModuleView({ moduleId, module }) {
   const { user } = useAuth();
-  return (
-    <div className="page">
-      <h2 className="page-h" style={{ color: "#334155" }}>⑦ 設定</h2>
-      {user.canManageUsers ? (
-        <UsersPage enabledModules={user.enabledModules} />
-      ) : (
-        <p className="muted">ユーザー管理の権限がありません。</p>
-      )}
-    </div>
-  );
-}
 
-function ModulePlaceholder({ module }) {
+  // 設定はコアが担当
+  if (moduleId === "settings") {
+    return (
+      <div className="page">
+        <h2 className="page-h" style={{ color: "#334155" }}>⑦ 設定</h2>
+        {user.canManageUsers
+          ? <UsersPage enabledModules={user.enabledModules} />
+          : <p className="muted">ユーザー管理の権限がありません。</p>}
+      </div>
+    );
+  }
+
+  // 各モジュール（登録済みならそのコンポーネント）
+  const Comp = MODULE_COMPONENTS[moduleId];
+  if (Comp) return <Comp module={module} />;
+
+  // 未実装モジュールのプレースホルダ
   if (!module) return null;
   return (
     <div className="page">
       <h2 className="page-h" style={{ color: module.color }}>{module.no} {module.label}</h2>
       <div className="placeholder" style={{ borderColor: module.color }}>
         <p><b>{module.label}</b>（{module.desc}）</p>
-        <p className="muted">
-          この画面は担当者が実装します。接続仕様書の名前空間「{module.id}」で作成してください。
-        </p>
+        <p className="muted">この画面は担当者が実装します。接続仕様書の名前空間「{module.id}」で作成してください。</p>
       </div>
     </div>
   );

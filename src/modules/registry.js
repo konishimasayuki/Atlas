@@ -1,0 +1,10 @@
+// 各モジュールの入口コンポーネントを登録する表。
+// 担当者は自分のモジュールを作ったらここに1行追加するだけ。
+import SalesModule from "./sales/index.jsx";
+
+export const MODULE_COMPONENTS = {
+  sales: SalesModule,
+  // inventory: InventoryModule,
+  // hr: HrModule,
+  // ga: GaModule,
+};
