@@ -1,5 +1,6 @@
 // api/sales/customers/index.js ── 顧客台帳：一覧(GET) / 追加(POST)
 import { redis } from "../../_lib/redis.js";
+import { mgetByIds } from "../../_lib/core.js";
 import { requireSales, salesKey, pad4 } from "../_guard.js";
 
 const FIELDS = ["name", "kana", "type", "contactPerson", "phone", "email", "address", "rank", "status", "note"];
@@ -11,11 +12,7 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const ids = await redis.smembers(salesKey.customers(tenant));
-    const list = [];
-    for (const id of ids) {
-      const c = await redis.get(salesKey.customer(tenant, id));
-      if (c) list.push(c);
-    }
+    const list = await mgetByIds(ids, (id) => salesKey.customer(tenant, id));
     list.sort((a, b) => a.code.localeCompare(b.code));
     return res.status(200).json({ ok: true, data: list });
   }

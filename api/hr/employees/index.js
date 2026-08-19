@@ -1,5 +1,6 @@
 // api/hr/employees/index.js ── 人事台帳：一覧(GET) / 追加(POST)
 import { redis } from "../../_lib/redis.js";
+import { mgetByIds } from "../../_lib/core.js";
 import { requireHr, hrKey, pad4 } from "../_guard.js";
 
 const FIELDS = ["name","kana","gender","department","position","employmentType","joinDate","birthDate","email","phone","location","skills","qualifications","hobbies","bio","status"];
@@ -12,11 +13,7 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const ids = await redis.smembers(hrKey.employees(tenant));
-    const list = [];
-    for (const id of ids) {
-      const e = await redis.get(hrKey.employee(tenant, id));
-      if (e) list.push(e);
-    }
+    const list = await mgetByIds(ids, (id) => hrKey.employee(tenant, id));
     list.sort((a, b) => a.code.localeCompare(b.code));
     return res.status(200).json({ ok: true, data: list });
   }

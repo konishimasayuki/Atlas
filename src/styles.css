@@ -311,3 +311,35 @@ body{
 .profile-block{margin-bottom:14px}
 .pb-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
 .chips-row{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ===== 追加: 在庫・棚卸 ===== */
+.pill.as-btn{cursor:pointer;font-family:inherit}
+.pill.on-warn{background:#B23A48;color:#fff;border-color:#B23A48}
+.status.st-low{color:#B23A48;background:#fbeef0;border:1px solid #e0b4ba}
+.stock-low{color:#B23A48}
+
+/* 棚卸セッションの行 */
+.st-list{display:flex;flex-direction:column;gap:7px}
+.st-row{
+  display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);
+  border-radius:11px;padding:11px 13px;
+}
+.st-info{min-width:0;flex:1}
+.st-name{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.st-count{display:flex;align-items:center;gap:10px;flex:none}
+.st-input{
+  width:92px;border:1px solid var(--line-2);border-radius:9px;padding:9px 10px;
+  font-size:16px;text-align:right;font-family:inherit;background:#fff;
+}
+.st-input:focus{outline:2px solid #9A5A0B;outline-offset:1px}
+.st-input:disabled{background:#F4F7FB;color:var(--muted)}
+.st-diff{font-family:ui-monospace,monospace;font-weight:700;font-size:14px;min-width:42px;text-align:right}
+.st-diff.plus{color:#0B6E52}
+.st-diff.minus{color:#B23A48}
+.st-diff.zero{color:var(--muted)}
+
+.st-actions{
+  position:sticky;bottom:0;display:flex;gap:10px;justify-content:flex-end;
+  padding:14px 0 4px;margin-top:16px;background:linear-gradient(transparent,var(--bg) 40%);
+}
+.st-actions .btn-ghost,.st-actions .btn-primary{width:auto}

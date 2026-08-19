@@ -10,19 +10,22 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const codes = await redis.smembers(k.companies());
+    // 会社レコードを1往復でまとめ取得
+    const recs = codes.length ? await redis.mget(...codes.map((c) => k.company(c))) : [];
+    // 各社のユーザー数はpipelineで1往復にまとめる
+    const pipe = redis.pipeline();
+    for (const code of codes) pipe.scard(k.users(code));
+    const counts = codes.length ? await pipe.exec() : [];
     const companies = [];
-    for (const code of codes) {
-      const c = await redis.get(k.company(code));
-      if (c) {
-        const userCount = await redis.scard(k.users(code));
-        companies.push({
-          code: c.code, name: c.name,
-          enabledModules: c.enabledModules || [],
-          isActive: c.isActive !== false,
-          userCount,
-        });
-      }
-    }
+    recs.forEach((c, i) => {
+      if (!c) return;
+      companies.push({
+        code: c.code, name: c.name,
+        enabledModules: c.enabledModules || [],
+        isActive: c.isActive !== false,
+        userCount: Number(counts[i]) || 0,
+      });
+    });
     companies.sort((a, b) => a.code.localeCompare(b.code));
     return res.status(200).json({ ok: true, data: companies });
   }

@@ -127,3 +127,12 @@ export function safeUser(u) {
     canManageUsers: !!u.canManageUsers,
   };
 }
+
+// ---- 複数キーを1往復で取得（N+1回避）----
+// idList: IDの配列, keyFn: (id)=>Redisキー を渡すと、存在するものだけ配列で返す
+export async function mgetByIds(idList, keyFn) {
+  if (!idList || idList.length === 0) return [];
+  const keys = idList.map(keyFn);
+  const vals = await redis.mget(...keys);
+  return vals.filter((v) => v != null);
+}

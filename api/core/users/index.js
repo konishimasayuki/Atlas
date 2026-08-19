@@ -1,7 +1,7 @@
 // api/core/users/index.js ── 会社管理者が自社ユーザーを一覧/追加（canManageUsers 必須）
 // 付与できる画面は「会社が契約している機能(enabledModules)」の範囲内に限定される。
 import { redis } from "../../_lib/redis.js";
-import { getCurrentUser, k, hashPassword, safeUser } from "../../_lib/core.js";
+import { getCurrentUser, k, hashPassword, safeUser, mgetByIds } from "../../_lib/core.js";
 
 export default async function handler(req, res) {
   const me = await getCurrentUser(req);
@@ -16,11 +16,8 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const ids = await redis.smembers(k.users(code));
-    const users = [];
-    for (const id of ids) {
-      const u = await redis.get(k.user(code, id));
-      if (u) users.push(safeUser(u));
-    }
+    const raw = await mgetByIds(ids, (id) => k.user(code, id));
+    const users = raw.map(safeUser);
     users.sort((a, b) => a.id.localeCompare(b.id));
     return res.status(200).json({ ok: true, data: users });
   }
