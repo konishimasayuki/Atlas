@@ -272,3 +272,42 @@ body{
 @media(max-width:600px){
   .form2{grid-template-columns:1fr}
 }
+
+/* ===== 追加: 人事台帳（プロファイルブック） ===== */
+.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:11px}
+.emp-card{
+  display:flex;align-items:flex-start;gap:12px;text-align:left;cursor:pointer;
+  background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;
+  font-family:inherit;transition:box-shadow .15s,transform .05s;
+}
+.emp-card:hover{box-shadow:0 10px 24px -16px rgba(20,30,50,.5);border-color:#6A34A0}
+.emp-card:active{transform:translateY(1px)}
+.emp-avatar{
+  width:52px;height:52px;border-radius:50%;flex:none;display:grid;place-items:center;
+  color:#fff;font-weight:900;font-size:22px;
+}
+.emp-avatar.lg{width:72px;height:72px;font-size:30px}
+.emp-info{display:flex;flex-direction:column;min-width:0;gap:1px}
+.emp-name{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px}
+.emp-flag{font-style:normal;font-size:10px;font-weight:700;color:#8a5a1a;background:#FBF1DF;border:1px solid #c79a5a;border-radius:999px;padding:1px 7px}
+.emp-kana{font-size:11px;color:var(--muted)}
+.emp-meta{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.emp-skills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.skill-chip{font-style:normal;font-size:10.5px;color:#6A34A0;background:#F2EAFB;border:1px solid #d8c3ea;border-radius:5px;padding:1px 7px}
+.skill-chip.lg{font-size:12.5px;padding:3px 10px}
+.qual-chip{font-style:normal;font-size:12.5px;color:#0B6E52;background:#E3F4EC;border:1px solid #a9d9c6;border-radius:5px;padding:3px 10px}
+
+/* プロフィール表示 */
+.profile-head{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.profile-name{font-weight:800;font-size:20px;display:flex;align-items:center;gap:8px}
+.profile-kana{font-size:12.5px;color:var(--muted)}
+.profile-role{font-size:13.5px;color:var(--ink-2);margin-top:3px}
+.profile-rows{border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:14px}
+.prow{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
+.prow:last-child{border-bottom:0}
+.prow:nth-child(2n){background:#FBFCFE}
+.prow-l{color:var(--muted);font-size:12px;font-weight:700}
+.prow-v{color:var(--ink)}
+.profile-block{margin-bottom:14px}
+.pb-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.chips-row{display:flex;flex-wrap:wrap;gap:6px}

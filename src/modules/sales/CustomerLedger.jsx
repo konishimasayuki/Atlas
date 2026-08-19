@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../../core/auth/AuthContext.jsx";
 
 const ACCENT = "#1657B0";
 const STATUS_CLASS = { "取引中": "active", "見込み": "prospect", "休眠": "dormant" };
@@ -8,6 +9,7 @@ const STATUSES = ["取引中", "見込み", "休眠"];
 const EMPTY = { name: "", kana: "", type: "法人", contactPerson: "", phone: "", email: "", address: "", rank: "B", status: "見込み", note: "" };
 
 export default function CustomerLedger({ onBack }) {
+  const { user } = useAuth();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
@@ -16,14 +18,26 @@ export default function CustomerLedger({ onBack }) {
   const [editing, setEditing] = useState(null); // customer or {} for new
   const [isNew, setIsNew] = useState(false);
 
-  async function load() {
-    setLoading(true);
+  async function fetchList() {
     const r = await fetch("/api/sales/customers", { credentials: "include" });
     const j = await r.json();
-    setList(j.ok ? j.data : []);
+    return j.ok ? j.data : [];
+  }
+
+  async function init() {
+    setLoading(true);
+    let data = await fetchList();
+    // デモ会社(TEST)は空なら自動で50件投入（ボタン不要）
+    if (data.length === 0 && user.company === "TEST") {
+      await fetch("/api/sales/customers/seed", { method: "POST", credentials: "include" });
+      data = await fetchList();
+    }
+    setList(data);
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { init(); }, []);
+
+  async function load() { setList(await fetchList()); }
 
   async function seed() {
     setSeeding(true);
