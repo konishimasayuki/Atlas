@@ -1,21 +1,35 @@
-// api/_lib/core.js  ── コア共通処理（キー / パスワード / セッション / テナント）
+// api/_lib/core.js ── コア共通処理（会社/テナント・スーパー管理者・セッション・権限）
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { redis } from "./redis.js";
 
-// 単一テナント運用。将来ログイン時にテナント解決へ拡張する。
-export const DEFAULT_TENANT = "t001";
+// スーパー管理者（運営）用の予約会社コード
+export const SUPER_CODE = "z.z";
 
-const SID_COOKIE = "tng_sid";
-// 約10年。実質「ログアウトされるまでずっと保持」
-const SESSION_MAXAGE = 60 * 60 * 24 * 3650;
+// 全機能（①〜⑦）の id。modules.js と一致させること。
+export const ALL_MODULES = ["sales", "inventory", "accounting", "payroll", "hr", "ga", "settings"];
 
-// ---- Redis キー（接続仕様書 §6: atlas:{tenant}:{module}:{entity}:{id}）----
+const SID_COOKIE = "atlas_sid";
+const SESSION_MAXAGE = 60 * 60 * 24 * 3650; // 約10年 = ログアウトまで保持
+
+// ---- Redis キー（接続仕様書 §6）----
 export const k = {
-  user: (t, id) => `atlas:${t}:core:user:${id}`,
-  users: (t) => `atlas:${t}:core:users`, // loginId の SET
-  session: (t, token) => `atlas:${t}:core:session:${token}`,
+  // 運営領域
+  superAdmin: (id) => `atlas:_super:admin:${id}`,
+  superAdmins: () => `atlas:_super:admins`,
+  companies: () => `atlas:_super:companies`,
+  company: (code) => `atlas:_super:company:${code}`,
+  // 会社領域
+  user: (c, id) => `atlas:${c}:core:user:${id}`,
+  users: (c) => `atlas:${c}:core:users`,
+  // セッション（トークン単位・会社を横断して解決できるようグローバル）
+  session: (token) => `atlas:session:${token}`,
 };
+
+// 会社コードの形式（英数・ハイフン・アンダースコア／z.z はドット含みで自動的に予約）
+export function isValidCompanyCode(code) {
+  return typeof code === "string" && /^[A-Za-z0-9_-]{2,20}$/.test(code);
+}
 
 // ---- パスワード ----
 export async function hashPassword(pw) {
@@ -52,40 +66,64 @@ export function clearSessionCookie(res) {
 export function getToken(req) {
   return parseCookies(req)[SID_COOKIE] || null;
 }
-export async function createSession(tenant, userId) {
+export async function createSession(scope, companyCode, userId) {
   const token = randomUUID();
-  // TTL を付けない = ログアウトで削除するまで保持
-  await redis.set(k.session(tenant, token), { userId, tenant, createdAt: Date.now() });
-  return token;
+  await redis.set(k.session(token), {
+    scope, // "super" | "company"
+    companyCode: companyCode || null,
+    userId,
+    createdAt: Date.now(),
+  });
+  return token; // TTLなし = ログアウトで削除するまで保持
 }
-export async function destroySession(tenant, token) {
-  if (token) await redis.del(k.session(tenant, token));
+export async function destroySession(token) {
+  if (token) await redis.del(k.session(token));
 }
 
 // ---- 現在のログインユーザー（未ログインは null）----
 export async function getCurrentUser(req) {
   const token = getToken(req);
   if (!token) return null;
-  const tenant = DEFAULT_TENANT;
-  const sess = await redis.get(k.session(tenant, token));
+  const sess = await redis.get(k.session(token));
   if (!sess) return null;
-  const user = await redis.get(k.user(tenant, sess.userId));
+
+  if (sess.scope === "super") {
+    const admin = await redis.get(k.superAdmin(sess.userId));
+    if (!admin || admin.isActive === false) return null;
+    return { scope: "super", id: admin.id, name: admin.name, isSuper: true };
+  }
+
+  const company = await redis.get(k.company(sess.companyCode));
+  if (!company || company.isActive === false) return null;
+  const user = await redis.get(k.user(sess.companyCode, sess.userId));
   if (!user || user.isActive === false) return null;
-  return safeUser(user);
+  return companyUserView(user, company);
 }
 
-// パスワードハッシュ等を除いた、クライアントに返してよい形
-export function safeUser(u) {
+// 会社ユーザーがクライアントに見る形（実際に使える画面＝会社契約 ∩ 本人許可）
+export function companyUserView(u, company) {
+  const enabled = company.enabledModules || [];
+  const allowed = u.allowedModules || [];
+  const effective = enabled.filter((m) => allowed.includes(m));
   return {
+    scope: "company",
     id: u.id,
     name: u.name,
-    tenant: u.tenant,
-    allowedModules: u.allowedModules || [],
+    company: company.code,
+    companyName: company.name,
+    enabledModules: enabled,
+    allowedModules: allowed,
+    effectiveModules: effective,
     canManageUsers: !!u.canManageUsers,
   };
 }
 
-// 接続仕様書で参照する getTenant。現状は単一テナント。
-export function getTenant(_req) {
-  return DEFAULT_TENANT;
+// ユーザー一覧などで返す最小形
+export function safeUser(u) {
+  return {
+    id: u.id,
+    name: u.name,
+    allowedModules: u.allowedModules || [],
+    canManageUsers: !!u.canManageUsers,
+  };
 }

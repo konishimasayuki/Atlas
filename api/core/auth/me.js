@@ -1,4 +1,4 @@
-// api/core/auth/me.js  ── 現在のログインユーザーと権限を返す
+// api/core/auth/me.js ── 現在のログインユーザー（scope込み）
 import { getCurrentUser } from "../../_lib/core.js";
 
 export default async function handler(req, res) {

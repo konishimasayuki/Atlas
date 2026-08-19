@@ -5,8 +5,8 @@ import UsersPage from "../settings/UsersPage.jsx";
 
 export default function AppShell() {
   const { user, logout } = useAuth();
-  // 権限のある画面だけ表示
-  const visible = MODULES.filter((m) => user.allowedModules.includes(m.id));
+  // 実際に使える画面 = 会社契約 ∩ 本人許可（サーバで計算済みの effectiveModules）
+  const visible = MODULES.filter((m) => user.effectiveModules.includes(m.id));
   const [active, setActive] = useState(visible[0]?.id || null);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -19,6 +19,7 @@ export default function AppShell() {
         <span className="topbar-brand">Atlas</span>
         {cur && <span className="topbar-cur" style={{ color: cur.color }}>{cur.no} {cur.label}</span>}
         <div className="topbar-right">
+          <span className="topbar-company">{user.companyName}</span>
           <span className="topbar-user">{user.name}</span>
           <button className="btn-ghost" onClick={logout}>ログアウト</button>
         </div>
@@ -55,7 +56,7 @@ function SettingsView() {
     <div className="page">
       <h2 className="page-h" style={{ color: "#334155" }}>⑦ 設定</h2>
       {user.canManageUsers ? (
-        <UsersPage />
+        <UsersPage enabledModules={user.enabledModules} />
       ) : (
         <p className="muted">ユーザー管理の権限がありません。</p>
       )}

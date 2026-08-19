@@ -21,11 +21,11 @@ export default function LoginPage() {
 
   if (checking) return <div className="splash">読み込み中…</div>;
   if (needsSetup) return <SetupForm onDone={(u) => setUser(u)} />;
-
   return <LoginForm login={login} />;
 }
 
 function LoginForm({ login }) {
+  const [companyCode, setCompanyCode] = useState("");
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
@@ -35,9 +35,9 @@ function LoginForm({ login }) {
     setErr("");
     setBusy(true);
     try {
-      await login(loginId.trim(), password);
+      await login(companyCode.trim(), loginId.trim(), password);
     } catch {
-      setErr("IDまたはパスワードが違います");
+      setErr("会社コード・ID・パスワードのいずれかが違います");
     }
     setBusy(false);
   }
@@ -50,6 +50,10 @@ function LoginForm({ login }) {
           <span className="login-tag">一括業務管理システム</span>
         </div>
         <h1 className="login-title">ログイン</h1>
+        <label className="fld">
+          <span>会社コード</span>
+          <input value={companyCode} onChange={(e) => setCompanyCode(e.target.value)} autoCapitalize="off" autoComplete="off" placeholder="例: TEST" />
+        </label>
         <label className="fld">
           <span>ユーザーID</span>
           <input value={loginId} onChange={(e) => setLoginId(e.target.value)} autoComplete="username" />
@@ -65,9 +69,14 @@ function LoginForm({ login }) {
           />
         </label>
         {err && <p className="login-err">{err}</p>}
-        <button className="btn-primary" disabled={busy || !loginId || !password} onClick={submit}>
+        <button className="btn-primary" disabled={busy || !companyCode || !loginId || !password} onClick={submit}>
           {busy ? "確認中…" : "ログイン"}
         </button>
+
+        {/* デモ案内（不要なら削除してよい） */}
+        <div className="demo-hint">
+          <b>デモ:</b> 会社コード <code>TEST</code> ／ ID <code>demo</code> ／ PW <code>demo1234</code>
+        </div>
       </div>
     </div>
   );
@@ -106,8 +115,11 @@ function SetupForm({ onDone }) {
           <span className="login-logo">Atlas</span>
           <span className="login-tag">初回セットアップ</span>
         </div>
-        <h1 className="login-title">管理者を作成</h1>
-        <p className="setup-note">最初の管理者ユーザーを1人作成します。全画面とユーザー管理の権限が付きます。</p>
+        <h1 className="login-title">スーパー管理者を作成</h1>
+        <p className="setup-note">
+          運営（スーパー管理者）を1人作成します。ログイン時の会社コードは <code>z.z</code> です。
+          作成すると、確認用のデモ会社（コード <code>TEST</code>）も自動で用意されます。
+        </p>
         <label className="fld"><span>ユーザーID</span>
           <input value={loginId} onChange={(e) => setLoginId(e.target.value)} /></label>
         <label className="fld"><span>名前</span>

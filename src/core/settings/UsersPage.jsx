@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MODULES } from "../modules.js";
 
-export default function UsersPage() {
+export default function UsersPage({ enabledModules = [] }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -47,12 +47,18 @@ export default function UsersPage() {
         </div>
       )}
 
-      {showAdd && <AddUser onClose={() => setShowAdd(false)} onDone={() => { setShowAdd(false); load(); }} />}
+      {showAdd && (
+        <AddUser
+          enabledModules={enabledModules}
+          onClose={() => setShowAdd(false)}
+          onDone={() => { setShowAdd(false); load(); }}
+        />
+      )}
     </div>
   );
 }
 
-function AddUser({ onClose, onDone }) {
+function AddUser({ enabledModules, onClose, onDone }) {
   const [loginId, setLoginId] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -60,6 +66,9 @@ function AddUser({ onClose, onDone }) {
   const [canMng, setCanMng] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // 会社が契約している機能だけ選択肢に出す
+  const selectable = MODULES.filter((m) => enabledModules.includes(m.id));
 
   function toggle(id) {
     setMods((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -98,9 +107,9 @@ function AddUser({ onClose, onDone }) {
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
 
         <div className="fld">
-          <span>アクセスできる画面</span>
+          <span>アクセスできる画面（自社の契約範囲）</span>
           <div className="modgrid">
-            {MODULES.map((m) => (
+            {selectable.map((m) => (
               <label key={m.id} className={"modchk" + (mods.includes(m.id) ? " on" : "")} style={{ "--mc": m.color }}>
                 <input type="checkbox" checked={mods.includes(m.id)} onChange={() => toggle(m.id)} />
                 <span>{m.no} {m.label}</span>
@@ -111,7 +120,7 @@ function AddUser({ onClose, onDone }) {
 
         <label className="chk-row">
           <input type="checkbox" checked={canMng} onChange={(e) => setCanMng(e.target.checked)} />
-          <span>ユーザー管理を許可する（設定でユーザー追加ができる）</span>
+          <span>ユーザー管理を許可する</span>
         </label>
 
         {err && <p className="login-err">{err}</p>}

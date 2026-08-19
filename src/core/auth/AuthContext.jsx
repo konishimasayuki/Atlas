@@ -22,12 +22,12 @@ export function AuthProvider({ children }) {
     refresh();
   }, [refresh]);
 
-  const login = useCallback(async (loginId, password) => {
+  const login = useCallback(async (companyCode, loginId, password) => {
     const r = await fetch("/api/core/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ loginId, password }),
+      body: JSON.stringify({ companyCode, loginId, password }),
     });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || "login_failed");

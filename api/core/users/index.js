@@ -1,19 +1,24 @@
-// api/core/users/index.js  ── ユーザー一覧 / 追加（canManageUsers 権限が必須）
+// api/core/users/index.js ── 会社管理者が自社ユーザーを一覧/追加（canManageUsers 必須）
+// 付与できる画面は「会社が契約している機能(enabledModules)」の範囲内に限定される。
 import { redis } from "../../_lib/redis.js";
-import { getCurrentUser, getTenant, k, hashPassword, safeUser } from "../../_lib/core.js";
+import { getCurrentUser, k, hashPassword, safeUser } from "../../_lib/core.js";
 
 export default async function handler(req, res) {
   const me = await getCurrentUser(req);
   if (!me) return res.status(401).json({ ok: false, error: "unauthorized" });
+  if (me.scope !== "company") return res.status(403).json({ ok: false, error: "forbidden" });
   if (!me.canManageUsers) return res.status(403).json({ ok: false, error: "forbidden" });
 
-  const t = getTenant(req);
+  const code = me.company;
+  const company = await redis.get(k.company(code));
+  if (!company || company.isActive === false) return res.status(403).json({ ok: false, error: "company_inactive" });
+  const enabled = company.enabledModules || [];
 
   if (req.method === "GET") {
-    const ids = await redis.smembers(k.users(t));
+    const ids = await redis.smembers(k.users(code));
     const users = [];
     for (const id of ids) {
-      const u = await redis.get(k.user(t, id));
+      const u = await redis.get(k.user(code, id));
       if (u) users.push(safeUser(u));
     }
     users.sort((a, b) => a.id.localeCompare(b.id));
@@ -24,21 +29,25 @@ export default async function handler(req, res) {
     const { loginId, name, password, allowedModules, canManageUsers } = req.body || {};
     if (!loginId || !password) return res.status(400).json({ ok: false, error: "missing" });
 
-    const exists = await redis.get(k.user(t, loginId));
+    const exists = await redis.get(k.user(code, loginId));
     if (exists) return res.status(409).json({ ok: false, error: "exists" });
+
+    // 会社が契約している機能の範囲内だけを許可
+    const requested = Array.isArray(allowedModules) ? allowedModules : [];
+    const allowed = requested.filter((m) => enabled.includes(m));
 
     const user = {
       id: loginId,
       name: name || loginId,
-      tenant: t,
+      company: code,
       passwordHash: await hashPassword(password),
-      allowedModules: Array.isArray(allowedModules) ? allowedModules : [],
+      allowedModules: allowed,
       canManageUsers: !!canManageUsers,
       isActive: true,
       createdAt: Date.now(),
     };
-    await redis.set(k.user(t, loginId), user);
-    await redis.sadd(k.users(t), loginId);
+    await redis.set(k.user(code, loginId), user);
+    await redis.sadd(k.users(code), loginId);
     return res.status(200).json({ ok: true, data: safeUser(user) });
   }
 
