@@ -561,3 +561,53 @@ body{
 .ai-badge{font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,#6A34A0,#1657B0);border-radius:6px;padding:2px 9px;letter-spacing:.04em}
 .ai-level{margin-left:auto;font-size:11px;font-weight:700;color:#6A34A0;background:#fff;border:1px solid #d8c3ea;border-radius:999px;padding:2px 10px}
 .ai-body{font-size:13.5px;line-height:1.8;color:var(--ink-2);white-space:pre-wrap}
+
+/* ===== 追加: 仕訳・試算表・財務三表 ===== */
+.jr-list{display:flex;flex-direction:column;gap:10px}
+.jr-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.jr-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.jr-date{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.jr-desc{font-size:13.5px;font-weight:600}
+.jr-del{margin-left:auto;width:26px;height:26px;border-radius:7px;border:1px solid var(--line-2);background:#fff;color:var(--muted);cursor:pointer}
+.jr-lines{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start}
+.jr-col{display:flex;flex-direction:column;gap:4px}
+.jr-col.credit{text-align:right}
+.jr-line{display:flex;justify-content:space-between;gap:8px;font-size:13px;background:#F7FAF9;border-radius:6px;padding:5px 9px}
+.jr-col.credit .jr-line{flex-direction:row-reverse}
+.jr-line span:last-child{font-family:ui-monospace,monospace}
+.jr-arrow{color:var(--line-2);padding-top:5px}
+
+.acc-table{width:100%;border-collapse:collapse;font-size:13px}
+.acc-table th,.acc-table td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+.acc-table th.num,.acc-table td.num{text-align:right;font-family:ui-monospace,monospace}
+.acc-table thead th{background:#F3F7F5;font-size:12px;color:var(--ink-2)}
+.acc-table td.strong{font-weight:700}
+.acc-table tfoot td{border-top:2px solid var(--line-2);font-weight:800;background:#F3F7F5}
+.acc-name{font-weight:600}
+.acc-type{font-size:10px;color:var(--muted);margin-left:6px;background:#eef2f0;border-radius:4px;padding:1px 6px}
+
+.jr-editor{background:#FBFCFE;border:1px solid var(--line);border-radius:11px;padding:12px;margin-top:6px}
+.jr-editor-head{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:8px}
+.jr-edit-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.jr-side{width:64px;flex:none;padding:9px 4px;border:1px solid var(--line-2);border-radius:8px;font-size:13px}
+.jr-acc{flex:1;min-width:0;padding:9px;border:1px solid var(--line-2);border-radius:8px;font-size:13px}
+.jr-amt{width:96px;flex:none;padding:9px;border:1px solid var(--line-2);border-radius:8px;font-size:14px;text-align:right;font-family:ui-monospace,monospace}
+.jr-balance{text-align:center;font-weight:700;border-radius:9px;padding:10px;margin:12px 0}
+.jr-balance.ok{color:#0B6E52;background:#E3F4EC;border:1px solid #a9d9c6}
+.jr-balance.ng{color:#B23A48;background:#fbeef0;border:1px solid #e0b4ba}
+
+.fs-sheet{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px}
+.fs-title{font-weight:800;font-size:16px;text-align:center;padding-bottom:12px;border-bottom:2px solid var(--line-2);margin-bottom:12px}
+.fs-row{display:flex;justify-content:space-between;padding:8px 4px;font-size:14px;border-bottom:1px dashed var(--line)}
+.fs-row span:last-child{font-family:ui-monospace,monospace}
+.fs-row.strong{font-weight:800;background:#F3F7F5;border-radius:6px;padding:9px}
+.fs-net{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:14px;background:#0B6E52;color:#fff;border-radius:11px;font-weight:800}
+.fs-net span:last-child{font-family:ui-monospace,monospace;font-size:19px}
+.fs-detail{display:flex;justify-content:space-between;padding:5px 4px;font-size:13px;color:var(--ink-2)}
+.fs-detail span:last-child{font-family:ui-monospace,monospace}
+.bs-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.bs-h{font-weight:700;font-size:13px;color:#0B6E52;border-left:3px solid #0B6E52;padding-left:8px;margin-bottom:6px}
+.bs-check{text-align:center;font-weight:700;border-radius:9px;padding:10px;margin-top:14px}
+.bs-check.ok{color:#0B6E52;background:#E3F4EC;border:1px solid #a9d9c6}
+.bs-check.ng{color:#B23A48;background:#fbeef0;border:1px solid #e0b4ba}
+@media(max-width:600px){ .bs-cols{grid-template-columns:1fr} .jr-lines{grid-template-columns:1fr} .jr-arrow{display:none} .jr-col.credit{text-align:left} .jr-col.credit .jr-line{flex-direction:row} }
