@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import Expenses from "./Expenses.jsx";
 import Journal from "./Journal.jsx";
 import Financial from "./Financial.jsx";
+import CashFlow from "./CashFlow.jsx";
 
 const FEATURES = [
   { id: "expenses", no: "1", label: "経費精算", desc: "申請・承認・立替精算（ガソリン自動計算）", ready: true },
   { id: "journal",  no: "2", label: "仕訳・試算表", desc: "仕訳入力・勘定科目・試算表", ready: true },
   { id: "financial",no: "3", label: "財務三表", desc: "貸借対照表・損益計算書・資金", ready: true },
-  { id: "cash",     no: "4", label: "資金繰り", desc: "資金繰り表・予算（近日）", ready: false },
+  { id: "cash",     no: "4", label: "資金繰り", desc: "入金/支払予定・将来の資金推移", ready: true },
 ];
 
 const ACCENT = "#0B6E52";
@@ -28,6 +29,7 @@ export default function AccountingModule() {
   if (view === "expenses") return <Expenses onBack={() => { setView("dashboard"); loadPending(); }} />;
   if (view === "journal") return <Journal onBack={() => setView("dashboard")} />;
   if (view === "financial") return <Financial onBack={() => setView("dashboard")} />;
+  if (view === "cash") return <CashFlow onBack={() => setView("dashboard")} />;
 
   return (
     <div className="page mod-dash">

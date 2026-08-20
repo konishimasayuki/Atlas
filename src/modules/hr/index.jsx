@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import EmployeeBook from "./EmployeeBook.jsx";
 import StressCheck from "./StressCheck.jsx";
+import ShiftBoard from "./ShiftBoard.jsx";
+import OrgChart from "./OrgChart.jsx";
 
 const FEATURES = [
   { id: "book",   no: "1", label: "人事台帳", desc: "社員プロフィール・スキルの管理", ready: true },
-  { id: "attend", no: "2", label: "勤怠・シフト", desc: "打刻・シフト・36協定（近日）", ready: false },
+  { id: "shift",  no: "2", label: "シフト管理", desc: "月間シフト表・勤務割当", ready: true },
   { id: "stress", no: "3", label: "AIストレスチェック", desc: "受検・AI分析・高ストレス者判定・組織提言", ready: true },
-  { id: "org",    no: "4", label: "組織図", desc: "部署・役割の可視化（近日）", ready: false },
+  { id: "org",    no: "4", label: "組織図", desc: "所属を元にした組織図（編集可）", ready: true },
 ];
 
 const ACCENT = "#6A34A0";
@@ -32,6 +34,8 @@ export default function HrModule() {
   if (view === "stress") {
     return <StressCheck onBack={() => setView("dashboard")} />;
   }
+  if (view === "shift") return <ShiftBoard onBack={() => setView("dashboard")} />;
+  if (view === "org") return <OrgChart onBack={() => setView("dashboard")} />;
 
   return (
     <div className="page mod-dash">
