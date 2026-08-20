@@ -11,6 +11,14 @@ export async function requireHr(req, res) {
 }
 
 export const hrKey = {
+  // シフト管理（月単位の割当ボード）
+  shiftBoard: (t, ym) => `atlas:${t}:hr:shiftboard:${ym}`,
+  shiftBoards: (t) => `atlas:${t}:hr:shiftboards`,
+  shiftCodes: (t) => `atlas:${t}:hr:shiftcodes`,
+  // 組織図（編集可能な独立ツリー）
+  orgNode: (t, id) => `atlas:${t}:hr:orgnode:${id}`,
+  orgNodes: (t) => `atlas:${t}:hr:orgnodes`,
+  orgSeq: (t) => `atlas:${t}:hr:seq:orgnode`,
   employee: (t, id) => `atlas:${t}:hr:employee:${id}`,
   employees: (t) => `atlas:${t}:hr:employees`,
   seq: (t) => `atlas:${t}:hr:seq:employee`,

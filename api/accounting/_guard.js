@@ -11,6 +11,10 @@ export async function requireAccounting(req, res) {
 }
 
 export const acctKey = {
+  // 資金繰り（入金/支払 予定）
+  cfEntry: (t, id) => `atlas:${t}:accounting:cf:${id}`,
+  cfEntries: (t) => `atlas:${t}:accounting:cfentries`,
+  cfSeq: (t) => `atlas:${t}:accounting:seq:cf`,
   // 勘定科目マスタ
   account: (t, code) => `atlas:${t}:accounting:account:${code}`,
   accounts: (t) => `atlas:${t}:accounting:accounts`,
