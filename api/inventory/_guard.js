@@ -11,6 +11,10 @@ export async function requireInventory(req, res) {
 }
 
 export const invKey = {
+  // 発注管理
+  order: (t, id) => `atlas:${t}:inventory:order:${id}`,
+  orders: (t) => `atlas:${t}:inventory:orders`,
+  orderSeq: (t) => `atlas:${t}:inventory:seq:order`,
   item: (t, id) => `atlas:${t}:inventory:item:${id}`,
   items: (t) => `atlas:${t}:inventory:items`,
   itemSeq: (t) => `atlas:${t}:inventory:seq:item`,

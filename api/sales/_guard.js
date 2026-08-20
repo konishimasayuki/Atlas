@@ -12,6 +12,14 @@ export async function requireSales(req, res) {
 }
 
 export const salesKey = {
+  // 商談（案件）
+  deal: (t, id) => `atlas:${t}:sales:deal:${id}`,
+  deals: (t) => `atlas:${t}:sales:deals`,
+  dealSeq: (t) => `atlas:${t}:sales:seq:deal`,
+  // 販促メール（キャンペーン）
+  campaign: (t, id) => `atlas:${t}:sales:campaign:${id}`,
+  campaigns: (t) => `atlas:${t}:sales:campaigns`,
+  campaignSeq: (t) => `atlas:${t}:sales:seq:campaign`,
   customer: (t, id) => `atlas:${t}:sales:customer:${id}`,
   customers: (t) => `atlas:${t}:sales:customers`,
   seq: (t) => `atlas:${t}:sales:seq:customer`,

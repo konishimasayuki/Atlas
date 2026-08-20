@@ -89,3 +89,68 @@ export function calcBonus(amount, setting, rates = DEFAULT_RATES) {
   const net = gross - deductionTotal;
   return { gross, health, nursing, pension, employment, socialTotal, incomeTax, deductionTotal, net };
 }
+
+
+// ========== 年末調整（概算） ==========
+// 給与所得控除（令和以降の速算・概算）
+export function salaryIncomeDeduction(income) {
+  if (income <= 1625000) return 550000;
+  if (income <= 1800000) return Math.floor(income * 0.4) - 100000;
+  if (income <= 3600000) return Math.floor(income * 0.3) + 80000;
+  if (income <= 6600000) return Math.floor(income * 0.2) + 440000;
+  if (income <= 8500000) return Math.floor(income * 0.1) + 1100000;
+  return 1950000;
+}
+
+// 基礎控除（合計所得に応じ逓減・概算。給与のみ想定）
+export function basicDeduction(totalIncome) {
+  if (totalIncome <= 24000000) return 480000;
+  if (totalIncome <= 24500000) return 320000;
+  if (totalIncome <= 25000000) return 160000;
+  return 0;
+}
+
+// 所得税の速算（課税所得→年税額。復興特別所得税2.1%込み）
+export function incomeTaxAnnual(taxable) {
+  const t = Math.max(0, Math.floor(taxable / 1000) * 1000);
+  let base;
+  if (t <= 1950000) base = t * 0.05;
+  else if (t <= 3300000) base = t * 0.10 - 97500;
+  else if (t <= 6950000) base = t * 0.20 - 427500;
+  else if (t <= 9000000) base = t * 0.23 - 636000;
+  else if (t <= 18000000) base = t * 0.33 - 1536000;
+  else if (t <= 40000000) base = t * 0.40 - 2796000;
+  else base = t * 0.45 - 4796000;
+  return Math.floor(Math.max(0, base) * 1.021); // 復興特別所得税込み
+}
+
+// 年末調整の計算
+// params: { grossYear(年間総支給), socialYear(年間社会保険料), withheldYear(源泉徴収済), dependents,
+//           insuranceDeduction(生命保険料控除など任意), spouseDeduction(配偶者控除 任意) }
+export function calcYearEnd(p) {
+  const gross = Number(p.grossYear) || 0;
+  const social = Number(p.socialYear) || 0;
+  const withheld = Number(p.withheldYear) || 0;
+  const dependents = Number(p.dependents) || 0;
+  const insDed = Number(p.insuranceDeduction) || 0;
+  const spouseDed = Number(p.spouseDeduction) || 0;
+
+  const salaryDed = salaryIncomeDeduction(gross);
+  const employmentIncome = Math.max(0, gross - salaryDed); // 給与所得
+  const basic = basicDeduction(employmentIncome);
+  const dependentDed = dependents * 380000; // 扶養控除（一般38万・概算）
+
+  const totalDeduction = basic + social + dependentDed + spouseDed + insDed;
+  const taxable = Math.max(0, employmentIncome - totalDeduction);
+  const annualTax = incomeTaxAnnual(taxable);
+
+  const diff = withheld - annualTax; // 正:還付 / 負:追徴
+  return {
+    gross, salaryDed, employmentIncome, basic, social,
+    dependentDed, spouseDed, insDed, totalDeduction,
+    taxable, annualTax, withheld,
+    refund: diff >= 0 ? diff : 0,
+    collect: diff < 0 ? -diff : 0,
+    diff,
+  };
+}

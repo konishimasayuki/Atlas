@@ -11,6 +11,14 @@ export async function requireGa(req, res) {
 }
 
 export const gaKey = {
+  // 仕入・取引条件
+  supplier: (t, id) => `atlas:${t}:ga:supplier:${id}`,
+  suppliers: (t) => `atlas:${t}:ga:suppliers`,
+  supplierSeq: (t) => `atlas:${t}:ga:seq:supplier`,
+  // 電子契約
+  contract: (t, id) => `atlas:${t}:ga:contract:${id}`,
+  contracts: (t) => `atlas:${t}:ga:contracts`,
+  contractSeq: (t) => `atlas:${t}:ga:seq:contract`,
   // 資産・備品管理
   asset: (t, id) => `atlas:${t}:ga:asset:${id}`,
   assets: (t) => `atlas:${t}:ga:assets`,
