@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import CustomerLedger from "./CustomerLedger.jsx";
+import DealPipeline from "./DealPipeline.jsx";
+import Campaigns from "./Campaigns.jsx";
+import AiChat from "./AiChat.jsx";
 
 // このモジュールが持つ機能（ダッシュボードに並ぶカード）
 const FEATURES = [
   { id: "customers", no: "1", label: "顧客台帳", desc: "顧客情報・取引状況の管理", ready: true },
-  { id: "deals",     no: "2", label: "商談管理", desc: "案件・商談の進捗（近日）", ready: false },
-  { id: "leads",     no: "3", label: "見込み客", desc: "リード育成・選別（近日）", ready: false },
-  { id: "promo",     no: "4", label: "販促・メール", desc: "DM・キャンペーン（近日）", ready: false },
+  { id: "deals",     no: "2", label: "商談管理", desc: "案件パイプライン・フェーズ・確度管理", ready: true },
+  { id: "promo",     no: "3", label: "販促メール", desc: "顧客セグメント配信・キャンペーン管理", ready: true },
+  { id: "aichat",    no: "4", label: "営業支援AI", desc: "商談・顧客を踏まえた助言・文面作成", ready: true },
 ];
 
 const ACCENT = "#1657B0";
@@ -29,6 +32,9 @@ export default function SalesModule() {
   if (view === "customers") {
     return <CustomerLedger onBack={() => { setView("dashboard"); loadCount(); }} />;
   }
+  if (view === "deals") return <DealPipeline onBack={() => setView("dashboard")} />;
+  if (view === "promo") return <Campaigns onBack={() => setView("dashboard")} />;
+  if (view === "aichat") return <AiChat onBack={() => setView("dashboard")} />;
 
   return (
     <div className="page mod-dash">

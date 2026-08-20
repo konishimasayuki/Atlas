@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import ItemMaster from "./ItemMaster.jsx";
 import Stocktake from "./Stocktake.jsx";
+import Orders from "./Orders.jsx";
+import Forecast from "./Forecast.jsx";
 
 const FEATURES = [
   { id: "stocktake", no: "1", label: "棚卸管理", desc: "実地棚卸・理論在庫との差異照合", ready: true },
   { id: "items",     no: "2", label: "商品マスタ", desc: "商品・在庫・発注点の管理", ready: true },
-  { id: "receiving", no: "3", label: "入出庫", desc: "入荷・出荷・移動（近日）", ready: false },
-  { id: "order",     no: "4", label: "発注管理", desc: "発注点割れの自動提案（近日）", ready: false },
+  { id: "forecast",  no: "3", label: "AI需要予測", desc: "需要予測・欠品リスク・推奨発注量", ready: true },
+  { id: "order",     no: "4", label: "発注管理", desc: "発注書作成・入荷で在庫自動反映", ready: true },
 ];
 
 const ACCENT = "#9A5A0B";
@@ -26,6 +28,8 @@ export default function InventoryModule() {
 
   if (view === "items") return <ItemMaster onBack={() => { setView("dashboard"); loadCount(); }} />;
   if (view === "stocktake") return <Stocktake onBack={() => { setView("dashboard"); loadCount(); }} />;
+  if (view === "forecast") return <Forecast onBack={() => setView("dashboard")} />;
+  if (view === "order") return <Orders onBack={() => setView("dashboard")} />;
 
   return (
     <div className="page mod-dash">

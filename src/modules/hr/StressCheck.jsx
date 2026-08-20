@@ -6,6 +6,7 @@ const ACCENT = "#6A34A0";
 export default function StressCheck({ onBack }) {
   const { user } = useAuth();
   const [state, setState] = useState(null); // { round, mine, summary, isApprover }
+  const [ai, setAi] = useState(null);
   const [loading, setLoading] = useState(true);
   const [taking, setTaking] = useState(false);
 
@@ -24,6 +25,12 @@ export default function StressCheck({ onBack }) {
     }
     setState(d);
     setLoading(false);
+    // AI分析を取得
+    try {
+      const ar = await fetch("/api/hr/stresscheck/ai", { credentials: "include" });
+      const aj = await ar.json();
+      if (aj.ok) setAi(aj.data);
+    } catch { /* noop */ }
   }
   useEffect(() => { init(); }, []);
 
@@ -34,7 +41,7 @@ export default function StressCheck({ onBack }) {
     <div className="page ledger">
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 人事管理</button>
-        <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>ストレスチェック</h2>
+        <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>AIストレスチェック</h2>
         <span className="pill" style={{ marginLeft: "auto" }}>{state.round} 実施回</span>
       </div>
 
@@ -49,6 +56,12 @@ export default function StressCheck({ onBack }) {
                 ? "高ストレスの傾向があります。産業医・相談窓口の面談をおすすめします。"
                 : "現在のところ、ストレスは高くない状態です。"}
             </div>
+            {ai?.personal && (
+              <div className="ai-panel">
+                <div className="ai-head"><span className="ai-badge">AI</span>あなたへのアドバイス<span className="ai-level">{ai.personal.level}</span></div>
+                <div className="ai-body">{ai.personal.advice}</div>
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -58,6 +71,14 @@ export default function StressCheck({ onBack }) {
           </>
         )}
       </div>
+
+      {/* AI組織インサイト（管理者） */}
+      {state.isApprover && ai?.org && (
+        <div className="ai-panel org">
+          <div className="ai-head"><span className="ai-badge">AI</span>組織分析<span className="ai-level">{ai.org.headline}</span></div>
+          <div className="ai-body">{ai.org.insight}</div>
+        </div>
+      )}
 
       {/* 管理者向け集計 */}
       {state.isApprover && state.summary && <AdminSummary s={state.summary} />}
