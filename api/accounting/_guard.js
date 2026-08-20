@@ -11,6 +11,13 @@ export async function requireAccounting(req, res) {
 }
 
 export const acctKey = {
+  // 勘定科目マスタ
+  account: (t, code) => `atlas:${t}:accounting:account:${code}`,
+  accounts: (t) => `atlas:${t}:accounting:accounts`,
+  // 仕訳
+  journal: (t, id) => `atlas:${t}:accounting:journal:${id}`,
+  journals: (t) => `atlas:${t}:accounting:journals`,
+  journalSeq: (t) => `atlas:${t}:accounting:seq:journal`,
   expense: (t, id) => `atlas:${t}:accounting:expense:${id}`,
   expenses: (t) => `atlas:${t}:accounting:expenses`,
   expenseSeq: (t) => `atlas:${t}:accounting:seq:expense`,
