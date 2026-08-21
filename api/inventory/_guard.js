@@ -11,6 +11,10 @@ export async function requireInventory(req, res) {
 }
 
 export const invKey = {
+  // 入出庫（出庫記録：販売/消費/持出/廃棄、入庫：その他調整）
+  movement: (t, id) => `atlas:${t}:inventory:movement:${id}`,
+  movements: (t) => `atlas:${t}:inventory:movements`,
+  movementSeq: (t) => `atlas:${t}:inventory:seq:movement`,
   // 発注管理
   order: (t, id) => `atlas:${t}:inventory:order:${id}`,
   orders: (t) => `atlas:${t}:inventory:orders`,
