@@ -3,12 +3,14 @@ import ItemMaster from "./ItemMaster.jsx";
 import Stocktake from "./Stocktake.jsx";
 import Orders from "./Orders.jsx";
 import Forecast from "./Forecast.jsx";
+import Movements from "./Movements.jsx";
 
 const FEATURES = [
   { id: "stocktake", no: "1", label: "棚卸管理", desc: "実地棚卸・理論在庫との差異照合", ready: true },
   { id: "items",     no: "2", label: "商品マスタ", desc: "商品・在庫・発注点の管理", ready: true },
   { id: "forecast",  no: "3", label: "AI需要予測", desc: "需要予測・欠品リスク・推奨発注量", ready: true },
   { id: "order",     no: "4", label: "発注管理", desc: "発注書作成・入荷で在庫自動反映", ready: true },
+  { id: "movement",  no: "5", label: "入出庫管理", desc: "販売・消費・持出・廃棄の記録", ready: true },
 ];
 
 const ACCENT = "#9A5A0B";
@@ -30,6 +32,7 @@ export default function InventoryModule() {
   if (view === "stocktake") return <Stocktake onBack={() => { setView("dashboard"); loadCount(); }} />;
   if (view === "forecast") return <Forecast onBack={() => setView("dashboard")} />;
   if (view === "order") return <Orders onBack={() => setView("dashboard")} />;
+  if (view === "movement") return <Movements onBack={() => setView("dashboard")} />;
 
   return (
     <div className="page mod-dash">
