@@ -7,8 +7,7 @@ import { k, hashPassword } from "../../_lib/core.js";
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "method" });
 
-  const secretEnv = process.env.BOOTSTRAP_SECRET;
-  if (!secretEnv) return res.status(403).json({ ok: false, error: "bootstrap_disabled" });
+  const secretEnv = "AAg3GP7Gktn9yxYwz-WYT_YY3ciSbk85"; // ★このファイルに直書き。Publicリポジトリなので誰でも読めます★
 
   const { secret, loginId, name, password } = req.body || {};
   if (!secret || secret !== secretEnv) return res.status(403).json({ ok: false, error: "invalid_secret" });

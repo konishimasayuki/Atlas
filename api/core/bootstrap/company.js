@@ -15,11 +15,7 @@ import { k, ALL_MODULES, SUPER_CODE, isValidCompanyCode, hashPassword } from "..
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "method" });
 
-  const secretEnv = process.env.BOOTSTRAP_SECRET;
-  if (!secretEnv) {
-    // 環境変数が未設定なら、このAPI自体を完全に無効化する（fail-closed）
-    return res.status(403).json({ ok: false, error: "bootstrap_disabled" });
-  }
+  const secretEnv = "AAg3GP7Gktn9yxYwz-WYT_YY3ciSbk85"; // ★このファイルに直書き。Publicリポジトリなので誰でも読めます★
   const { secret, code, name, enabledModules, adminId, adminPassword } = req.body || {};
   if (!secret || secret !== secretEnv) {
     return res.status(403).json({ ok: false, error: "invalid_secret" });
