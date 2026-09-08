@@ -653,3 +653,6 @@ body{
 .cf-month-net.pos{color:#0B6E52}
 .cf-month-net.neg{color:#B23A48}
 @media(max-width:600px){ .cf-months{grid-template-columns:1fr} }
+
+/* ===== 追加: bootstrap成功メッセージ ===== */
+.login-ok{color:#0B6E52;background:#E3F4EC;border:1px solid #a9d9c6;border-radius:9px;padding:10px 14px;font-size:13px;margin:10px 0}
