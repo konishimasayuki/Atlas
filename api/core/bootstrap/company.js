@@ -1,25 +1,12 @@
 // api/core/bootstrap/company.js ── 【緊急用】スーパー管理者ログインを経由せず会社を作成する
-//
-// 通常の会社作成は api/core/companies/index.js（要スーパー管理者ログイン）だが、
-// z.z のID・パスワードが分からなくなった場合の救済用に、Vercelの環境変数
-// BOOTSTRAP_SECRET と一致する secret を渡した場合のみ会社作成を許可する。
-//
-// ★重要★ 使い方：
-// 1. Vercelのプロジェクト設定 → Environment Variables で BOOTSTRAP_SECRET を設定する
-//    （長くてランダムな文字列を推奨。誰にも教えない）
-// 2. BOOTSTRAP_SECRET を設定していない間は、このAPIは常に403を返し、絶対に使えない
-// 3. 使い終わったら、Vercelの環境変数から BOOTSTRAP_SECRET を削除するか値を変更しておくと安全
+// 秘密キーなし。/bootstrap のURLを知っていれば誰でも使える状態。
 import { redis } from "../../_lib/redis.js";
 import { k, ALL_MODULES, SUPER_CODE, isValidCompanyCode, hashPassword } from "../../_lib/core.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "method" });
 
-  const secretEnv = "AAg3GP7Gktn9yxYwz-WYT_YY3ciSbk85"; // ★このファイルに直書き。Publicリポジトリなので誰でも読めます★
-  const { secret, code, name, enabledModules, adminId, adminPassword } = req.body || {};
-  if (!secret || secret !== secretEnv) {
-    return res.status(403).json({ ok: false, error: "invalid_secret" });
-  }
+  const { code, name, enabledModules, adminId, adminPassword } = req.body || {};
   if (!code || !name || !adminId || !adminPassword) {
     return res.status(400).json({ ok: false, error: "missing" });
   }
