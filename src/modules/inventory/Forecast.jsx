@@ -58,7 +58,7 @@ export default function Forecast({ onBack }) {
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 在庫・供給管理</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>AI需要予測</h2>
-        <span className="pill" style={{ marginLeft: "auto" }}>デモ予測</span>
+        <span className="pill" style={{ marginLeft: "auto" }}>{data && data.aiComment ? "Claude AI分析" : "デモ予測"}</span>
       </div>
 
       {loading ? <p className="muted">読み込み中…</p> : !data ? <p className="muted">データがありません。</p> : (
@@ -69,7 +69,13 @@ export default function Forecast({ onBack }) {
             <div className="pt-item"><span className="pt-l">推奨発注 品目</span><span className="pt-v">{data.summary.recommendItems}</span></div>
             <div className="pt-item"><span className="pt-l">推奨発注 金額</span><span className="pt-v">{yen(data.summary.recommendValue)}</span></div>
           </div>
-          <p className="muted" style={{ fontSize: 11.5, margin: "0 0 10px" }}>カテゴリの季節性・発注点・在庫回転から算出した概算予測です（将来クラウドAIで高度化）。</p>
+          {data.aiComment && (
+            <div className="ai-panel" style={{ margin: "0 0 12px" }}>
+              <div className="ai-head"><span className="ai-badge">AI</span>Claude による発注アドバイス</div>
+              <div className="ai-body">{data.aiComment}</div>
+            </div>
+          )}
+          <p className="muted" style={{ fontSize: 11.5, margin: "0 0 10px" }}>数値はカテゴリの季節性・発注点・在庫回転から算出した予測です{data.aiComment ? "。解説はClaude AIが作成しています。" : "（運営コンソールでClaude APIキーを設定するとAI解説が付きます）。"}</p>
 
           <div className="tabs">
             {["すべて", "要発注", "欠品危険"].map((t) => (

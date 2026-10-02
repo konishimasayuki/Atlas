@@ -4,6 +4,35 @@
 import { redis } from "../../_lib/redis.js";
 import { mgetByIds } from "../../_lib/core.js";
 import { requireHr, hrKey } from "../_guard.js";
+import { callClaude } from "../../_lib/ai.js";
+
+export const config = { maxDuration: 60 };
+
+const SC_SYSTEM = [
+  "あなたは日本の職場のメンタルヘルスに配慮する、ストレスチェック結果の解説AIです。",
+  "職業性ストレス簡易調査票の結果（A:仕事の負担 B:心身のストレス反応 C:周囲のサポート不足、各0〜100、高いほど要注意）をもとに助言します。",
+  "医学的な診断はしないこと。必要に応じて産業医・相談窓口の利用を勧めること。個人を責めない、やさしく具体的な表現で。",
+  "Markdownの見出し・表は使わず、短い段落で、全体で300字程度にまとめてください。",
+].join("\n");
+
+async function claudePersonal(score) {
+  const r = await callClaude({
+    system: SC_SYSTEM,
+    messages: [{ role: "user", content: `本人の結果：A=${score.A} B=${score.B} C=${score.C}、高ストレス判定=${score.highStress ? "該当" : "非該当"}。本人向けのアドバイスを書いてください。` }],
+    maxTokens: 700,
+  });
+  return r && r.text ? r.text : null;
+}
+
+async function claudeOrg(summary) {
+  const dept = Object.entries(summary.byDept || {}).map(([d, v]) => `${d}:${v.done}/${v.total}名受検`).join("、");
+  const r = await callClaude({
+    system: SC_SYSTEM,
+    messages: [{ role: "user", content: `組織全体の集計：対象${summary.targetCount}名、受検${summary.doneCount}名（受検率${summary.rate}%）、高ストレス者${summary.highStressCount}名、心身反応(B)平均${summary.avgB}。部署別：${dept}。人事・管理者向けに、組織としての課題と具体的な改善提言を書いてください。個人名は出さないこと。` }],
+    maxTokens: 900,
+  });
+  return r && r.text ? r.text : null;
+}
 
 function currentRound() {
   const d = new Date();
@@ -53,7 +82,9 @@ export default async function handler(req, res) {
 
   // 個人分析（自分の結果）
   const mine = await redis.get(hrKey.scResult(tenant, round, me.id));
-  const personal = mine ? aiPersonalAdvice(mine.score) : null;
+  let personal = mine ? aiPersonalAdvice(mine.score) : null;
+  let usedAi = false;
+  const personalAiP = mine ? claudePersonal(mine.score) : Promise.resolve(null);
 
   // 組織分析（管理者のみ）
   let org = null;
@@ -73,7 +104,11 @@ export default async function handler(req, res) {
       byDept,
     };
     org = aiOrgInsight(summary);
+    const orgAi = await claudeOrg(summary);
+    if (orgAi) { org = { ...org, insight: orgAi }; usedAi = true; }
   }
+  const personalAi = await personalAiP;
+  if (personal && personalAi) { personal = { ...personal, advice: personalAi }; usedAi = true; }
 
-  return res.status(200).json({ ok: true, data: { round, personal, org, demo: true } });
+  return res.status(200).json({ ok: true, data: { round, personal, org, demo: !usedAi } });
 }

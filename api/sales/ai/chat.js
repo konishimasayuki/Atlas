@@ -1,9 +1,11 @@
 // api/sales/ai/chat.js ── 営業支援AIチャット
-//  現状：デモ応答（営業データを参照した簡易ロジック）
-//  将来：callClaude() をAnthropic APIに差し替えるだけで本番AIになる
+//  Claude APIキー設定済み（スーパー管理者コンソール）なら Claude が回答。未設定・エラー時はデモ応答。
 import { redis } from "../../_lib/redis.js";
 import { mgetByIds } from "../../_lib/core.js";
 import { requireSales, salesKey } from "../_guard.js";
+import { callClaude as callClaudeApi } from "../../_lib/ai.js";
+
+export const config = { maxDuration: 60 };
 
 const yen = (n) => "¥" + (Number(n) || 0).toLocaleString();
 
@@ -18,7 +20,28 @@ async function loadContext(tenant) {
 
 // ★ ここを将来 Anthropic API 呼び出しに差し替える（下部コメント参照） ★
 async function callClaude(messages, ctx) {
-  return demoReply(messages, ctx);
+  const active = ctx.deals.filter((d) => !["受注", "失注"].includes(d.phase));
+  const dealLines = ctx.deals.slice(0, 60).map((d) =>
+    `${d.code}｜${d.title}｜${d.customerName}｜${d.phase}｜確度${d.probability}%｜${yen(d.amount)}｜担当:${d.owner}｜次:${d.nextAction || "なし"}｜予定:${d.expectedDate || "-"}`
+  ).join("\n");
+  const custLines = ctx.customers.slice(0, 80).map((c) =>
+    `${c.code}｜${c.name}｜ランク${c.rank}｜${c.status}`
+  ).join("\n");
+  const system = [
+    "あなたは日本の中小企業向け業務システム「Atlas」の営業支援AIです。",
+    "以下の自社の営業データだけを根拠に、簡潔で実践的な助言を日本語で返してください。データに無いことは推測と明示してください。",
+    "Markdownの見出しや表は使わず、読みやすい短い段落と箇条書き（・）で答えてください。",
+    `【集計】顧客${ctx.customers.length}件／商談${ctx.deals.length}件（進行中${active.length}件）`,
+    "【商談一覧】コード｜案件名｜顧客｜フェーズ｜確度｜金額｜担当｜次アクション｜受注予定",
+    dealLines || "（なし）",
+    "【顧客一覧】コード｜名称｜ランク｜状況",
+    custLines || "（なし）",
+  ].join("\n");
+  let hist = messages.filter((m) => m.role === "user" || m.role === "assistant").slice(-12);
+  while (hist.length && hist[0].role !== "user") hist = hist.slice(1); // 先頭はユーザー発言である必要がある
+  const r = hist.length ? await callClaudeApi({ system, messages: hist, maxTokens: 1200 }) : null;
+  if (r && r.text) return { text: r.text, demo: false };
+  return { text: demoReply(messages, ctx), demo: true, error: r?.error };
 }
 
 // ── デモ応答ロジック（キーワードで営業データを要約して返す） ──
@@ -87,35 +110,8 @@ export default async function handler(req, res) {
   if (!Array.isArray(messages) || messages.length === 0) return res.status(400).json({ ok: false, error: "no_messages" });
 
   const ctx = await loadContext(tenant);
-  const reply = await callClaude(messages, ctx);
+  const out = await callClaude(messages, ctx);
 
   // 軽い遅延で"考えている"感（デモ演出・任意）
-  return res.status(200).json({ ok: true, data: { role: "assistant", content: reply, demo: true } });
+  return res.status(200).json({ ok: true, data: { role: "assistant", content: out.text, demo: out.demo, aiError: out.error || null } });
 }
-
-/*
-【将来：Claude API に接続する手順】
-1) Vercelの環境変数に ANTHROPIC_API_KEY を設定
-2) callClaude を以下のように差し替える：
-
-async function callClaude(messages, ctx) {
-  const system = `あなたは営業支援AIです。以下の営業データを踏まえ、簡潔で実践的な助言を日本語で返してください。\n`
-    + `顧客数:${ctx.customers.length} 商談:${JSON.stringify(ctx.deals.slice(0,50))}`;
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-5",
-      max_tokens: 1024,
-      system,
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
-    }),
-  });
-  const j = await r.json();
-  return (j.content || []).map(b => b.text || "").join("\n") || "（応答が取得できませんでした）";
-}
-*/

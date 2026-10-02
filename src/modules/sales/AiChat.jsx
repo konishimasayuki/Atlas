@@ -9,6 +9,7 @@ export default function AiChat({ onBack }) {
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [isDemo, setIsDemo] = useState(null); // null=未判定 / true=デモ / false=Claude
   const scroller = useRef(null);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function AiChat({ onBack }) {
       });
       const j = await r.json();
       setMessages((prev) => [...prev, { role: "assistant", content: j.ok ? j.data.content : "エラーが発生しました。もう一度お試しください。", demo: j?.data?.demo }]);
+      if (j.ok) setIsDemo(!!j.data.demo);
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "通信エラーが発生しました。" }]);
     }
@@ -40,7 +42,7 @@ export default function AiChat({ onBack }) {
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 営業管理</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>営業支援AI</h2>
-        <span className="pill" style={{ marginLeft: "auto" }}>デモ応答</span>
+        <span className="pill" style={{ marginLeft: "auto" }}>{isDemo === false ? "Claude AI" : isDemo ? "デモ応答" : "AI"}</span>
       </div>
 
       <div className="chat-scroll" ref={scroller}>
@@ -74,7 +76,7 @@ export default function AiChat({ onBack }) {
         />
         <button className="chat-send" style={{ background: ACCENT }} disabled={busy || !input.trim()} onClick={() => send()}>送信</button>
       </div>
-      <p className="muted" style={{ fontSize: 11, textAlign: "center", margin: "6px 0 0" }}>デモ応答です。今後クラウドAI（Claude API）接続で本格的な回答になります。</p>
+      <p className="muted" style={{ fontSize: 11, textAlign: "center", margin: "6px 0 0" }}>{isDemo === false ? "Claude AIが営業データ（顧客・商談）を参照して回答しています。" : "APIキー未設定のためデモ応答です。運営コンソールでClaude APIキーを設定すると本格回答になります。"}</p>
     </div>
   );
 }

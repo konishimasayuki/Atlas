@@ -8,6 +8,7 @@ export default function SuperConsole() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [showAi, setShowAi] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -32,7 +33,10 @@ export default function SuperConsole() {
       <main className="content super-content">
         <div className="users-head">
           <h2 className="page-h" style={{ margin: 0 }}>会社管理</h2>
-          <button className="btn-primary sm" onClick={() => setShowAdd(true)}>＋ 会社を追加</button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn-ghost sm" onClick={() => setShowAi(true)}>AI設定（Claude）</button>
+            <button className="btn-primary sm" onClick={() => setShowAdd(true)}>＋ 会社を追加</button>
+          </div>
         </div>
 
         {loading ? (
@@ -66,6 +70,7 @@ export default function SuperConsole() {
       </main>
 
       {showAdd && <AddCompany onClose={() => setShowAdd(false)} onDone={() => { setShowAdd(false); load(); }} />}
+      {showAi && <AiSettings onClose={() => setShowAi(false)} />}
       {editing && <EditCompany company={editing} onClose={() => setEditing(null)} onDone={() => { setEditing(null); load(); }} />}
     </div>
   );
@@ -190,6 +195,88 @@ function EditCompany({ company, onClose, onDone }) {
           <button className="btn-ghost" onClick={onClose}>キャンセル</button>
           <button className="btn-primary" disabled={busy} onClick={save}>{busy ? "保存中…" : "保存"}</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Claude API キー設定（スーパー管理者専用） ----
+function AiSettings({ onClose }) {
+  const [st, setSt] = useState(null);
+  const [apiKey, setApiKey] = useState("");
+  const [model, setModel] = useState("");
+  const [enabled, setEnabled] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  async function load() {
+    const r = await fetch("/api/core/super/ai-settings", { credentials: "include" });
+    const j = await r.json();
+    if (j.ok) { setSt(j.data); setModel(j.data.model); setEnabled(j.data.enabled); }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function save() {
+    setBusy(true); setMsg(null);
+    const r = await fetch("/api/core/super/ai-settings", {
+      method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include",
+      body: JSON.stringify({ apiKey, model, enabled }),
+    });
+    const j = await r.json(); setBusy(false);
+    if (j.ok) { setSt(j.data); setApiKey(""); setMsg({ ok: true, text: "保存しました" }); }
+    else setMsg({ ok: false, text: "保存に失敗しました" });
+  }
+  async function test() {
+    setBusy(true); setMsg(null);
+    const r = await fetch("/api/core/super/ai-settings", {
+      method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+      body: JSON.stringify({ action: "test" }),
+    });
+    const j = await r.json(); setBusy(false);
+    if (j.ok) setMsg({ ok: true, text: "接続成功：" + j.data.reply });
+    else setMsg({ ok: false, text: j.error === "no_key" ? "APIキーが未設定です" : "接続失敗：" + j.error });
+  }
+  async function clearKey() {
+    if (!confirm("保存済みのAPIキーを削除しますか？（AI機能はデモ応答に戻ります）")) return;
+    setBusy(true);
+    const r = await fetch("/api/core/super/ai-settings", {
+      method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+      body: JSON.stringify({ action: "clear" }),
+    });
+    const j = await r.json(); setBusy(false);
+    if (j.ok) { setSt(j.data); setMsg({ ok: true, text: "削除しました" }); }
+  }
+
+  return (
+    <div className="modal-back" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>AI設定（Claude API）</h3>
+        {!st ? <p className="muted">読み込み中…</p> : (
+          <>
+            <p className="muted" style={{ fontSize: 12.5, marginTop: -4 }}>
+              全社共通のAPIキーです。営業支援AI・AI需要予測・AIストレスチェックで使われます。未設定の間はデモ応答になります。
+            </p>
+            <div className="fld"><span>現在のキー</span>
+              <div style={{ fontFamily: "ui-monospace,monospace", fontSize: 13 }}>{st.hasKey ? st.masked : "未設定"}</div>
+            </div>
+            <label className="fld"><span>{st.hasKey ? "新しいAPIキー（変更する場合のみ）" : "APIキー"}</span>
+              <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-ant-..." autoComplete="off" />
+            </label>
+            <label className="fld"><span>モデル</span>
+              <select value={model} onChange={(e) => setModel(e.target.value)}>
+                {st.models.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </label>
+            <label className="chk-row"><input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} /><span>AI機能を有効にする</span></label>
+            {msg && <p className={msg.ok ? "login-ok" : "login-err"}>{msg.text}</p>}
+            <div className="modal-actions">
+              {st.hasKey && <button className="btn-ghost danger" disabled={busy} onClick={clearKey}>キー削除</button>}
+              <span style={{ flex: 1 }} />
+              <button className="btn-ghost" disabled={busy || !st.hasKey} onClick={test}>接続テスト</button>
+              <button className="btn-primary" disabled={busy} onClick={save}>{busy ? "処理中…" : "保存"}</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

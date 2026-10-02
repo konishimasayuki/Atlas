@@ -15,6 +15,9 @@ export default function BootstrapPage() {
           このページは通常のログインを経由せず、会社（テナント）と初期管理者を作成します。
         </p>
         <CompanyForm />
+        <div className="sub-sep" style={{ marginTop: 28 }}>スーパー管理者（運営）を作成</div>
+        <p className="setup-note">ログイン画面で <b>会社コード z.z</b> と、ここで決めたID・パスワードで運営コンソールに入れます。AI設定（Claude APIキー）は運営コンソールから行います。</p>
+        <SuperAdminForm />
       </div>
     </div>
   );
@@ -81,6 +84,46 @@ function CompanyForm() {
       {msg && <p className={msg.ok ? "login-ok" : "login-err"}>{msg.text}</p>}
       <button className="btn-primary" disabled={busy || !code || !name || !adminId || !adminPassword} onClick={submit}>
         {busy ? "作成中…" : "会社を作成"}
+      </button>
+    </>
+  );
+}
+
+function SuperAdminForm() {
+  const [loginId, setLoginId] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    setMsg(null); setBusy(true);
+    try {
+      const r = await fetch("/api/core/bootstrap/superadmin", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loginId: loginId.trim(), name, password }),
+      });
+      const j = await r.json();
+      if (!j.ok) {
+        const map = { exists: "そのIDのスーパー管理者は既に存在します", weak_password: "パスワードは8文字以上にしてください", missing: "未入力の項目があります" };
+        setMsg({ ok: false, text: map[j.error] || "作成に失敗しました" });
+      } else {
+        setMsg({ ok: true, text: `作成しました。ログイン画面で 会社コード「z.z」／ID「${j.data.id}」／設定したパスワード でログインしてください。` });
+      }
+    } catch {
+      setMsg({ ok: false, text: "通信エラーが発生しました" });
+    }
+    setBusy(false);
+  }
+
+  return (
+    <>
+      <label className="fld"><span>ユーザーID</span><input value={loginId} onChange={(e) => setLoginId(e.target.value)} autoCapitalize="off" /></label>
+      <label className="fld"><span>名前</span><input value={name} onChange={(e) => setName(e.target.value)} /></label>
+      <label className="fld"><span>パスワード（8文字以上）</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+      {msg && <p className={msg.ok ? "login-ok" : "login-err"}>{msg.text}</p>}
+      <button className="btn-primary" disabled={busy || !loginId || password.length < 8} onClick={submit}>
+        {busy ? "作成中…" : "スーパー管理者を作成"}
       </button>
     </>
   );
