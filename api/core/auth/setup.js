@@ -1,4 +1,4 @@
-// api/core/auth/setup.js ── 初回セットアップ：最初のスーパー管理者(z.z)を作成し、デモ会社TESTを投入
+// api/core/auth/setup.js ── 初回セットアップ：最初のスーパー管理者(z)を作成し、デモ会社TESTを投入
 import { redis } from "../../_lib/redis.js";
 import {
   k, ALL_MODULES, hashPassword, createSession, setSessionCookie,

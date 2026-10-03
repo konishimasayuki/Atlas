@@ -16,7 +16,7 @@ export default function BootstrapPage() {
         </p>
         <CompanyForm />
         <div className="sub-sep" style={{ marginTop: 28 }}>スーパー管理者（運営）を作成</div>
-        <p className="setup-note">ログイン画面で <b>会社コード z.z</b> と、ここで決めたID・パスワードで運営コンソールに入れます。AI設定（Claude APIキー）は運営コンソールから行います。</p>
+        <p className="setup-note">ログイン画面で <b>会社コード z</b> と、ここで決めたID・パスワードで運営コンソールに入れます。AI設定（Claude APIキー）は運営コンソールから行います。</p>
         <SuperAdminForm />
       </div>
     </div>
@@ -108,7 +108,7 @@ function SuperAdminForm() {
         const map = { exists: "そのIDのスーパー管理者は既に存在します", weak_password: "パスワードは8文字以上にしてください", missing: "未入力の項目があります" };
         setMsg({ ok: false, text: map[j.error] || "作成に失敗しました" });
       } else {
-        setMsg({ ok: true, text: `作成しました。ログイン画面で 会社コード「z.z」／ID「${j.data.id}」／設定したパスワード でログインしてください。` });
+        setMsg({ ok: true, text: `作成しました。ログイン画面で 会社コード「z」／ID「${j.data.id}」／設定したパスワード でログインしてください。` });
       }
     } catch {
       setMsg({ ok: false, text: "通信エラーが発生しました" });

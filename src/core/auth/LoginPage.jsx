@@ -117,7 +117,7 @@ function SetupForm({ onDone }) {
         </div>
         <h1 className="login-title">スーパー管理者を作成</h1>
         <p className="setup-note">
-          運営（スーパー管理者）を1人作成します。ログイン時の会社コードは <code>z.z</code> です。
+          運営（スーパー管理者）を1人作成します。ログイン時の会社コードは <code>z</code> です。
           作成すると、確認用のデモ会社（コード <code>TEST</code>）も自動で用意されます。
         </p>
         <label className="fld"><span>ユーザーID</span>

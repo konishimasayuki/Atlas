@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { redis } from "./redis.js";
 
 // スーパー管理者（運営）用の予約会社コード
-export const SUPER_CODE = "z.z";
+export const SUPER_CODE = "z";
 
 // 全機能（①〜⑦）の id。modules.js と一致させること。
 export const ALL_MODULES = ["sales", "inventory", "accounting", "payroll", "hr", "ga", "settings"];
@@ -26,7 +26,7 @@ export const k = {
   session: (token) => `atlas:session:${token}`,
 };
 
-// 会社コードの形式（英数・ハイフン・アンダースコア／z.z はドット含みで自動的に予約）
+// 会社コードの形式（英数・ハイフン・アンダースコア／スーパー管理者用の z は1文字なので会社コードと衝突しない）
 export function isValidCompanyCode(code) {
   return typeof code === "string" && /^[A-Za-z0-9_-]{2,20}$/.test(code);
 }

@@ -117,7 +117,7 @@ function AddCompany({ onClose, onDone }) {
     if (!j.ok) {
       setErr(
         j.error === "exists" ? "その会社コードは既に存在します"
-        : j.error === "invalid_code" ? "会社コードは英数・ハイフンで2〜20文字（z.zは不可）"
+        : j.error === "invalid_code" ? "会社コードは英数・ハイフンで2〜20文字（zは不可）"
         : "登録に失敗しました"
       );
       return;

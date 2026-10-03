@@ -1,4 +1,4 @@
-// api/core/bootstrap/superadmin.js ── /bootstrap からスーパー管理者(会社コード z.z)を作成
+// api/core/bootstrap/superadmin.js ── /bootstrap からスーパー管理者(会社コード z)を作成
 // ★このURLを知っていれば誰でも作成できる。使い終わったら削除推奨★
 import { redis } from "../../_lib/redis.js";
 import { k, hashPassword } from "../../_lib/core.js";
