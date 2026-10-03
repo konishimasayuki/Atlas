@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { MODULES } from "../modules.js";
+import SuperUsers from "./SuperUsers.jsx";
+import SuperInquiries from "./SuperInquiries.jsx";
+import AccountMenu from "../account/AccountMenu.jsx";
 
 export default function SuperConsole() {
   const { user, logout } = useAuth();
@@ -9,6 +12,12 @@ export default function SuperConsole() {
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showAi, setShowAi] = useState(false);
+  const [view, setView] = useState("companies"); // companies | users | inquiries
+  const [inqCount, setInqCount] = useState(0);
+  useEffect(() => {
+    fetch("/api/core/super/inquiries", { credentials: "include" }).then((r) => r.json())
+      .then((j) => j.ok && setInqCount(j.data.filter((x) => x.status === "未対応").length)).catch(() => {});
+  }, []);
 
   async function load() {
     setLoading(true);
@@ -25,12 +34,21 @@ export default function SuperConsole() {
         <span className="topbar-brand">Atlas</span>
         <span className="super-badge">運営コンソール</span>
         <div className="topbar-right">
-          <span className="topbar-user">{user.name}</span>
-          <button className="btn-ghost" onClick={logout}>ログアウト</button>
+          <AccountMenu user={{ ...user, scope: "super" }} logout={logout} allowInquiry={false} />
         </div>
       </header>
 
       <main className="content super-content">
+        <div className="tabs" style={{ marginBottom: 16 }}>
+          <button className={"tab" + (view === "companies" ? " on" : "")} onClick={() => setView("companies")}>会社管理</button>
+          <button className={"tab" + (view === "users" ? " on" : "")} onClick={() => setView("users")}>全ユーザー</button>
+          <button className={"tab" + (view === "inquiries" ? " on" : "")} onClick={() => setView("inquiries")}>
+            問い合わせ{inqCount > 0 ? `（未対応 ${inqCount}）` : ""}
+          </button>
+        </div>
+        {view === "users" && <SuperUsers />}
+        {view === "inquiries" && <SuperInquiries onCount={setInqCount} />}
+        {view === "companies" && (<>
         <div className="users-head">
           <h2 className="page-h" style={{ margin: 0 }}>会社管理</h2>
           <div style={{ display: "flex", gap: 8 }}>
@@ -67,6 +85,7 @@ export default function SuperConsole() {
             ))}
           </div>
         )}
+        </>)}
       </main>
 
       {showAdd && <AddCompany onClose={() => setShowAdd(false)} onDone={() => { setShowAdd(false); load(); }} />}

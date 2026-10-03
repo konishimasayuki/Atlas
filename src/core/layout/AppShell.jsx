@@ -3,6 +3,7 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import { MODULES } from "../modules.js";
 import UsersPage from "../settings/UsersPage.jsx";
 import CompanyProfile from "../settings/CompanyProfile.jsx";
+import AccountMenu from "../account/AccountMenu.jsx";
 import { MODULE_COMPONENTS } from "../../modules/registry.js";
 
 export default function AppShell() {
@@ -21,8 +22,7 @@ export default function AppShell() {
         {cur && <span className="topbar-cur" style={{ color: cur.color }}>{cur.no} {cur.label}</span>}
         <div className="topbar-right">
           <span className="topbar-company">{user.companyName}</span>
-          <span className="topbar-user">{user.name}</span>
-          <button className="btn-ghost" onClick={logout}>ログアウト</button>
+          <AccountMenu user={user} logout={logout} />
         </div>
       </header>
 

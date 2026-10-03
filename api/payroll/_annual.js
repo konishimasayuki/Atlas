@@ -39,23 +39,92 @@ export async function collectYear(tenant, year) {
   return { per, months: runs.length, bonusCount: yearBonus.length };
 }
 
-// 給与所得控除（令和2年分以降）
-export function employmentIncomeDeduction(income) {
-  if (income <= 550999) return income;              // 給与所得0
+// ============ 税制パラメータ（年分で切替） ============
+// 令和7年度税制改正（令和7年分＝2025年分以降の年末調整に適用）
+//  ・給与所得控除の最低額 55万→65万
+//  ・基礎控除 48万→58万（＋合計所得655万以下は令和7・8年分の上乗せあり）
+//  ・配偶者控除/配偶者特別控除の配偶者の所得要件 48万→58万
+// ※ 令和8年度税制改正で令和8年分の数値が変わった場合は、ここを更新すること。
+const isR7 = (year) => Number(year) >= 2025;
+
+// 給与所得控除
+export function employmentIncomeDeduction(income, year) {
+  const r4 = (x) => Math.floor(x / 4000) * 4000; // 660万円未満は4,000円単位（所得税法別表第五の簡易計算）
+  if (isR7(year)) {
+    if (income <= 1900000) return Math.min(income, 650000);
+    if (income <= 3600000) return r4(income) * 0.3 + 80000;
+    if (income <= 6600000) return r4(income) * 0.2 + 440000;
+    if (income <= 8500000) return income * 0.1 + 1100000;
+    return 1950000;
+  }
+  if (income <= 550999) return income;
   if (income <= 1618999) return 550000;
-  if (income <= 1799999) return Math.floor(income / 4000) * 4000 * 0.4 - 100000;
-  if (income <= 3599999) return Math.floor(income / 4000) * 4000 * 0.3 + 80000;
-  if (income <= 6599999) return Math.floor(income / 4000) * 4000 * 0.2 + 440000;
+  if (income <= 1799999) return r4(income) * 0.4 - 100000;
+  if (income <= 3599999) return r4(income) * 0.3 + 80000;
+  if (income <= 6599999) return r4(income) * 0.2 + 440000;
   if (income <= 8499999) return income * 0.1 + 1100000;
-  return 1950000; // 上限
+  return 1950000;
 }
 
-// 基礎控除（合計所得2400万以下は48万）
-export function basicDeduction(totalIncome) {
+// 基礎控除（合計所得金額により変動）
+export function basicDeduction(totalIncome, year) {
+  if (isR7(year)) {
+    const y = Number(year);
+    if (y <= 2026) { // 令和7・8年分の上乗せ
+      if (totalIncome <= 1320000) return 950000;
+      if (totalIncome <= 3360000) return 880000;
+      if (totalIncome <= 4890000) return 680000;
+      if (totalIncome <= 6550000) return 630000;
+    } else if (totalIncome <= 1320000) return 950000;
+    if (totalIncome <= 23500000) return 580000;
+  } else if (totalIncome <= 24000000) return 480000;
   if (totalIncome <= 24000000) return 480000;
   if (totalIncome <= 24500000) return 320000;
   if (totalIncome <= 25000000) return 160000;
   return 0;
+}
+
+// 生命保険料控除（新制度・所得税）：区分ごとに計算し合計12万円まで
+export function lifeInsuranceItem(premium) {
+  const p = Math.max(0, Number(premium) || 0);
+  if (p <= 20000) return p;
+  if (p <= 40000) return Math.ceil(p / 2 + 10000);
+  if (p <= 80000) return Math.ceil(p / 4 + 20000);
+  return 40000;
+}
+export function lifeInsuranceDeduction(general, medical, pension) {
+  return Math.min(120000, lifeInsuranceItem(general) + lifeInsuranceItem(medical) + lifeInsuranceItem(pension));
+}
+
+// 地震保険料控除（所得税）：支払額全額・上限5万円
+export function earthquakeDeduction(premium) {
+  return Math.min(50000, Math.max(0, Number(premium) || 0));
+}
+
+// 配偶者控除・配偶者特別控除
+//  本人の合計所得 1,000万円超は対象外。配偶者の合計所得で控除額が決まる。
+export function spouseDeduction(selfIncome, spouseIncome, elderly, year) {
+  const tier = selfIncome <= 9000000 ? 0 : selfIncome <= 9500000 ? 1 : selfIncome <= 10000000 ? 2 : -1;
+  if (tier < 0) return { amount: 0, kind: "対象外（本人の所得1,000万円超）" };
+  const s = Math.max(0, Number(spouseIncome) || 0);
+  const limit = isR7(year) ? 580000 : 480000;
+  if (s <= limit) {
+    const base = elderly ? [480000, 320000, 160000] : [380000, 260000, 130000];
+    return { amount: base[tier], kind: elderly ? "配偶者控除（老人）" : "配偶者控除" };
+  }
+  const table = [
+    [950000, [380000, 260000, 130000]],
+    [1000000, [360000, 240000, 120000]],
+    [1050000, [310000, 210000, 110000]],
+    [1100000, [260000, 180000, 90000]],
+    [1150000, [210000, 140000, 70000]],
+    [1200000, [160000, 110000, 60000]],
+    [1250000, [110000, 80000, 40000]],
+    [1300000, [60000, 40000, 20000]],
+    [1330000, [30000, 20000, 10000]],
+  ];
+  for (const [max, vals] of table) if (s <= max) return { amount: vals[tier], kind: "配偶者特別控除" };
+  return { amount: 0, kind: "対象外（配偶者の所得133万円超）" };
 }
 
 // 所得税の速算表（課税所得→税額）
@@ -72,28 +141,39 @@ export function incomeTaxByBracket(taxable) {
   return Math.max(0, Math.floor(tax));
 }
 
-// 年末調整（概算）：社員1名分
-// setting から扶養人数、集計から給与総額・社保・源泉徴収済を使う
-export function calcYearEnd(agg, setting) {
+// 年末調整：社員1名分
+//  input（年調の申告内容）: { lifeGeneral, lifeMedical, lifePension, earthquake,
+//                            hasSpouse, spouseIncome, spouseElderly, housingLoanCredit }
+export function calcYearEnd(agg, setting, input = {}, year = new Date().getFullYear()) {
   const salaryIncome = agg.gross + agg.bonusGross;            // 年間給与総額（総支給）
   const socialPaid = agg.social + agg.bonusSocial;           // 支払った社会保険料
   const taxWithheld = agg.incomeTax + agg.bonusTax;          // 源泉徴収済み
 
-  const empDeduction = employmentIncomeDeduction(salaryIncome);
-  const incomeAfterEmp = Math.max(0, salaryIncome - empDeduction); // 給与所得
-  const basic = basicDeduction(incomeAfterEmp);
+  const empDeduction = Math.floor(employmentIncomeDeduction(salaryIncome, year));
+  const incomeAfterEmp = Math.max(0, salaryIncome - empDeduction); // 給与所得＝合計所得
+  const basic = basicDeduction(incomeAfterEmp, year);
   const dependents = Number(setting?.dependents) || 0;
-  const dependentDeduction = dependents * 380000;            // 扶養控除(一般)概算 38万/人
+  const dependentDeduction = dependents * 380000;            // 扶養控除（一般）38万/人
 
-  const taxableIncome = Math.max(0, incomeAfterEmp - socialPaid - basic - dependentDeduction);
-  const yearTaxBase = incomeTaxByBracket(taxableIncome);
-  const yearTax = Math.floor(yearTaxBase * 1.021);           // 復興特別所得税2.1%込み
+  const lifeInsurance = lifeInsuranceDeduction(input.lifeGeneral, input.lifeMedical, input.lifePension);
+  const earthquake = earthquakeDeduction(input.earthquake);
+  const sp = input.hasSpouse
+    ? spouseDeduction(incomeAfterEmp, input.spouseIncome, !!input.spouseElderly, year)
+    : { amount: 0, kind: "なし" };
+
+  const totalDeductions = socialPaid + basic + dependentDeduction + lifeInsurance + earthquake + sp.amount;
+  const taxableIncome = Math.max(0, Math.floor((incomeAfterEmp - totalDeductions) / 1000) * 1000);
+  const computedTax = incomeTaxByBracket(taxableIncome);      // 算出所得税額
+  const housingLoan = Math.min(computedTax, Math.max(0, Number(input.housingLoanCredit) || 0)); // 住宅ローン控除（税額控除）
+  const taxAfterCredit = computedTax - housingLoan;
+  const yearTax = Math.floor((taxAfterCredit * 1.021) / 100) * 100; // 復興特別所得税込み・100円未満切捨て
 
   const diff = taxWithheld - yearTax;                        // + なら還付、- なら追徴
   return {
     salaryIncome, socialPaid, taxWithheld,
     empDeduction, incomeAfterEmp, basic, dependentDeduction,
-    taxableIncome, yearTax,
+    lifeInsurance, earthquake, spouse: sp.amount, spouseKind: sp.kind,
+    taxableIncome, computedTax, housingLoan, yearTax,
     settlement: diff, // 正=還付 / 負=不足徴収
   };
 }

@@ -36,8 +36,16 @@ function LoginForm({ login }) {
     setBusy(true);
     try {
       await login(companyCode.trim(), loginId.trim(), password);
-    } catch {
-      setErr("会社コード・ID・パスワードのいずれかが違います");
+    } catch (e) {
+      const d = e.data || {};
+      if (d.error === "locked") {
+        const h = Math.floor(d.minutes / 60), m = d.minutes % 60;
+        setErr(`ログインに3回失敗したため、このIDはロックされています。あと約${h ? h + "時間" : ""}${m}分お待ちください。`);
+      } else if (d.error === "invalid" && typeof d.remaining === "number") {
+        setErr(`会社コード・ID・パスワードのいずれかが違います（あと${d.remaining}回失敗するとロックされます）`);
+      } else {
+        setErr("会社コード・ID・パスワードのいずれかが違います");
+      }
     }
     setBusy(false);
   }

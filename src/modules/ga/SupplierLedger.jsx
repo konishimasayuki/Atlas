@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../core/auth/AuthContext.jsx";
+import CsvTools from "../../shared/csv/CsvTools.jsx";
 
 const ACCENT = "#2A6F8E";
 const yen = (n) => "¥" + (Number(n) || 0).toLocaleString();
@@ -45,6 +46,13 @@ export default function SupplierLedger({ onBack }) {
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 総務管理</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>仕入・取引条件</h2>
+        <CsvTools rows={list} name="仕入先台帳" endpoint="/api/ga/suppliers" onImported={reload} accent={ACCENT}
+          columns={[{ key: "code", label: "仕入先コード", importable: false }, { key: "name", label: "仕入先名", required: true }, { key: "kana", label: "フリガナ" },
+            { key: "category", label: "区分" }, { key: "contactPerson", label: "担当者" }, { key: "phone", label: "電話番号" },
+            { key: "email", label: "メール" }, { key: "address", label: "住所" }, { key: "closingDay", label: "締日" },
+            { key: "paymentMonth", label: "支払月" }, { key: "paymentDay", label: "支払日" }, { key: "paymentMethod", label: "支払方法" },
+            { key: "rate", label: "掛率", type: "number" }, { key: "creditLimit", label: "与信限度額", type: "number" },
+            { key: "status", label: "状態" }, { key: "note", label: "備考" }]} />
         <button className="btn-primary sm" style={{ background: ACCENT }} onClick={openNew}>＋ 仕入先を登録</button>
       </div>
 

@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ companyCode, loginId, password }),
     });
     const j = await r.json();
-    if (!j.ok) throw new Error(j.error || "login_failed");
+    if (!j.ok) { const e = new Error(j.error || "login_failed"); e.data = j; throw e; }
     setUser(j.data);
     return j.data;
   }, []);

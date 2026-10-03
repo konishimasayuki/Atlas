@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../core/auth/AuthContext.jsx";
+import CsvTools from "../../shared/csv/CsvTools.jsx";
 
 const ACCENT = "#6A34A0";
 const DEPTS = ["営業部","開発部","製造部","管理部","総務部","人事部","経理部","カスタマーサポート部"];
@@ -83,6 +84,13 @@ export default function EmployeeBook({ onBack }) {
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 人事管理</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>人事台帳</h2>
+        <CsvTools rows={list} name="人事台帳" endpoint="/api/hr/employees" onImported={load} accent={ACCENT}
+          columns={[{ key: "code", label: "社員番号", importable: false }, { key: "name", label: "氏名", required: true }, { key: "kana", label: "フリガナ" },
+            { key: "gender", label: "性別" }, { key: "department", label: "部署" }, { key: "position", label: "役職" },
+            { key: "employmentType", label: "雇用形態" }, { key: "joinDate", label: "入社日" }, { key: "birthDate", label: "生年月日" },
+            { key: "email", label: "メール" }, { key: "phone", label: "電話番号" }, { key: "location", label: "勤務地" },
+            { key: "skills", label: "スキル", type: "array" }, { key: "qualifications", label: "資格", type: "array" },
+            { key: "hobbies", label: "趣味・特技" }, { key: "bio", label: "ひとこと" }, { key: "status", label: "在籍状況" }]} />
         <button className="btn-primary sm" style={{ background: ACCENT }} onClick={openNew}>＋ 社員を追加</button>
       </div>
 

@@ -33,10 +33,10 @@ export default function YearEnd({ onBack }) {
   async function openDetail(empId) {
     const r = await fetch(`/api/payroll/nencho?year=${year}&empId=${empId}`, { credentials: "include" });
     const j = await r.json();
-    if (j.ok) setDetail(j.data);
+    if (j.ok) setDetail({ ...j.data, empId });
   }
 
-  if (detail) return <YearEndDetail d={detail} onBack={() => setDetail(null)} />;
+  if (detail) return <YearEndDetail d={detail} onBack={() => { setDetail(null); fetchYear(year); }} onReload={() => openDetail(detail.empId)} />;
 
   return (
     <div className="page ledger">
@@ -56,7 +56,7 @@ export default function YearEnd({ onBack }) {
             <div className="pt-item"><span className="pt-l">還付 合計</span><span className="pt-v" style={{ color: "#0B6E52" }}>{yen(data.totalRefund)}</span></div>
             <div className="pt-item"><span className="pt-l">追徴 合計</span><span className="pt-v" style={{ color: "#B23A48" }}>{yen(data.totalCollect)}</span></div>
           </div>
-          <p className="muted" style={{ fontSize: 11.5, margin: "0 0 12px" }}>{data.count}名・給与所得控除/基礎控除/扶養控除・復興特別所得税を反映した概算です。保険料控除等は未反映。</p>
+          <p className="muted" style={{ fontSize: 11.5, margin: "0 0 12px" }}>{data.count}名・社会保険料/生命保険料/地震保険料/配偶者/基礎/扶養控除・住宅ローン控除・復興特別所得税を反映。各社員を開いて「控除の申告を入力」から申告内容を登録してください。</p>
 
           <div className="cust-list">
             {data.rows.map((r) => (
@@ -68,7 +68,7 @@ export default function YearEnd({ onBack }) {
                     {r.settlement >= 0 ? `還付 ${yen(r.settlement)}` : `追徴 ${yen(-r.settlement)}`}
                   </span>
                 </div>
-                <div className="cust-sub">給与収入 {yen(r.salaryIncome)}　年税額 {yen(r.yearTax)}　源泉済 {yen(r.taxWithheld)}</div>
+                <div className="cust-sub">給与収入 {yen(r.salaryIncome)}　年税額 {yen(r.yearTax)}　源泉済 {yen(r.taxWithheld)}{r.hasInput ? "　✓申告入力済" : "　申告未入力"}</div>
               </button>
             ))}
           </div>
@@ -78,16 +78,18 @@ export default function YearEnd({ onBack }) {
   );
 }
 
-function YearEndDetail({ d, onBack }) {
+function YearEndDetail({ d, onBack, onReload }) {
   const r = d.result;
-  const Row = ({ l, v, sign }) => (
-    <div className="ps-row"><span>{l}</span><span>{sign === "-" ? "− " : ""}{yen(v)}</span></div>
+  const [editing, setEditing] = useState(false);
+  const Row = ({ l, v, sign, note }) => (
+    <div className="ps-row"><span>{l}{note ? <small className="muted">　{note}</small> : null}</span><span>{sign === "-" ? "− " : ""}{yen(v)}</span></div>
   );
   return (
     <div className="page ledger">
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 一覧</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>{d.emp.name} の年末調整</h2>
+        <button className="btn-primary sm" style={{ background: ACCENT, marginLeft: "auto" }} onClick={() => setEditing(true)}>控除の申告を入力</button>
       </div>
       <div className="payslip">
         <div className="ps-head"><div><b>{d.emp.name}</b> <span className="muted">{d.emp.code}・{d.emp.department}</span></div><div className="ps-ym">{d.year}年</div></div>
@@ -96,18 +98,82 @@ function YearEndDetail({ d, onBack }) {
         <Row l="給与所得控除" v={r.empDeduction} sign="-" />
         <div className="ps-row strong"><span>給与所得</span><span>{yen(r.incomeAfterEmp)}</span></div>
         <Row l="社会保険料控除" v={r.socialPaid} sign="-" />
+        <Row l="生命保険料控除" v={r.lifeInsurance} sign="-" />
+        <Row l="地震保険料控除" v={r.earthquake} sign="-" />
+        <Row l="配偶者（特別）控除" v={r.spouse} sign="-" note={r.spouseKind !== "なし" ? r.spouseKind : ""} />
         <Row l="基礎控除" v={r.basic} sign="-" />
         <Row l="扶養控除" v={r.dependentDeduction} sign="-" />
         <div className="ps-row strong"><span>課税所得</span><span>{yen(r.taxableIncome)}</span></div>
         <div className="ps-sec">税額と精算</div>
-        <Row l="年税額（復興税込）" v={r.yearTax} />
+        <Row l="算出所得税額" v={r.computedTax} />
+        <Row l="住宅借入金等特別控除" v={r.housingLoan} sign="-" />
+        <Row l="年調年税額（復興税込・100円未満切捨）" v={r.yearTax} />
         <Row l="源泉徴収済み" v={r.taxWithheld} />
         <div className="ps-net" style={{ background: r.settlement >= 0 ? "#0B6E52" : "#B23A48" }}>
           <span>{r.settlement >= 0 ? "還付額" : "追徴額"}</span>
           <span>{yen(Math.abs(r.settlement))}</span>
         </div>
       </div>
-      <p className="muted" style={{ fontSize: 11.5 }}>※ 生命保険料控除・地震保険料控除・配偶者特別控除・住宅ローン控除等は未反映の概算です。</p>
+      <p className="muted" style={{ fontSize: 11.5 }}>
+        ※ 生命保険料控除は新制度で計算。扶養控除は一般（38万円/人）で計算しています。
+        {Number(d.year) >= 2025 ? "令和7年度税制改正（基礎控除・給与所得控除・配偶者の所得要件）を反映。" : ""}
+        最終的な税額は源泉徴収票の作成前に必ずご確認ください。
+      </p>
+      {editing && <NenchoInput d={d} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); onReload(); }} />}
+    </div>
+  );
+}
+
+function NenchoInput({ d, onClose, onSaved }) {
+  const i = d.input || {};
+  const [f, setF] = useState({
+    lifeGeneral: i.lifeGeneral || "", lifeMedical: i.lifeMedical || "", lifePension: i.lifePension || "",
+    earthquake: i.earthquake || "", hasSpouse: !!i.hasSpouse, spouseIncome: i.spouseIncome || "",
+    spouseElderly: !!i.spouseElderly, housingLoanCredit: i.housingLoanCredit || "",
+  });
+  const [busy, setBusy] = useState(false);
+  const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
+  const num = (k, label, hint) => (
+    <label className="fld"><span>{label}{hint ? <small className="muted">　{hint}</small> : null}</span>
+      <input type="number" inputMode="numeric" min="0" value={f[k]} onChange={(e) => set(k, e.target.value)} placeholder="0" /></label>
+  );
+
+  async function save() {
+    setBusy(true);
+    await fetch("/api/payroll/nencho/input", {
+      method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include",
+      body: JSON.stringify({ year: d.year, empId: d.empId, ...f }),
+    });
+    setBusy(false); onSaved();
+  }
+
+  return (
+    <div className="modal-back" onClick={onClose}>
+      <div className="modal wide" onClick={(e) => e.stopPropagation()}>
+        <h3>{d.emp.name}　{d.year}年分 年末調整の申告</h3>
+        <div className="sub-sep">保険料控除申告書（年間の支払保険料）</div>
+        <div className="form2">
+          {num("lifeGeneral", "一般生命保険料", "新制度")}
+          {num("lifeMedical", "介護医療保険料")}
+          {num("lifePension", "個人年金保険料", "新制度")}
+          {num("earthquake", "地震保険料", "上限5万円")}
+        </div>
+        <div className="sub-sep">配偶者控除等申告書</div>
+        <label className="chk-row"><input type="checkbox" checked={f.hasSpouse} onChange={(e) => set("hasSpouse", e.target.checked)} /><span>控除対象の配偶者がいる</span></label>
+        {f.hasSpouse && (
+          <div className="form2">
+            {num("spouseIncome", "配偶者の合計所得金額（見積額）", "給与のみなら 給与収入−給与所得控除")}
+            <label className="chk-row" style={{ alignSelf: "end" }}><input type="checkbox" checked={f.spouseElderly} onChange={(e) => set("spouseElderly", e.target.checked)} /><span>配偶者が年末時点で70歳以上</span></label>
+          </div>
+        )}
+        <div className="sub-sep">住宅借入金等特別控除申告書</div>
+        {num("housingLoanCredit", "住宅借入金等特別控除額", "申告書の「控除額」をそのまま入力（税額から直接差し引き）")}
+        <div className="modal-actions">
+          <span style={{ flex: 1 }} />
+          <button className="btn-ghost" onClick={onClose}>キャンセル</button>
+          <button className="btn-primary" disabled={busy} onClick={save}>{busy ? "保存中…" : "保存して再計算"}</button>
+        </div>
+      </div>
     </div>
   );
 }

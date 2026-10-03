@@ -718,3 +718,33 @@ body{
 .u-badge{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;color:#B23A48;background:#fbeef0;border:1px solid #e0b4ba}
 .u-badge.on{color:#0B6E52;background:#E3F4EC;border-color:#a9d9c6}
 .utable tr.u-off td{color:#9aa3b2}
+
+/* ===== 追加: アカウントメニュー ===== */
+.acct{position:relative}
+.acct-btn{display:flex;align-items:center;gap:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-caret{font-size:10px;opacity:.7}
+.acct-scrim{position:fixed;inset:0;z-index:60}
+.acct-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:61;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 8px 24px rgba(15,23,42,.14);min-width:180px;padding:6px;display:flex;flex-direction:column}
+.acct-menu button{text-align:left;background:none;border:0;padding:10px 12px;border-radius:8px;font-size:13.5px;color:var(--ink);cursor:pointer}
+.acct-menu button:hover{background:#F1F4F9}
+.acct-menu button.danger{color:#B23A48}
+
+/* ===== 追加: 問い合わせ ===== */
+.modal.wide{max-width:640px;width:100%}
+.inq-list{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto}
+.inq-item{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 13px;text-align:left;font:inherit;color:inherit}
+.inq-item.clickable{cursor:pointer}
+.inq-item.clickable:hover{border-color:var(--line-2)}
+.inq-head{display:flex;align-items:center;gap:8px}
+.inq-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+.inq-body{white-space:pre-wrap;font-size:13px;margin-top:8px;background:#F7F9FC;border-radius:8px;padding:9px 11px}
+.inq-reply{white-space:pre-wrap;font-size:13px;margin-top:8px;background:#E3F4EC;border:1px solid #a9d9c6;border-radius:8px;padding:9px 11px}
+
+/* ===== 追加: CSV ===== */
+.csv-tools{display:flex;gap:6px;margin-left:auto}
+.csv-tools + .btn-primary{margin-left:0}
+.csv-errors{background:#fbeef0;border:1px solid #e0b4ba;color:#8a2633;border-radius:9px;padding:8px 11px;font-size:12px;margin:8px 0;max-height:140px;overflow:auto}
+.csv-bar{height:10px;background:#EEF1F6;border-radius:99px;overflow:hidden;margin:12px 0 6px}
+.csv-bar div{height:100%;background:#1657B0;transition:width .2s}
+.linkbtn{background:none;border:0;padding:0;color:#1657B0;text-decoration:underline;cursor:pointer;font:inherit}
+@media (max-width:640px){ .csv-tools{margin-left:0} }

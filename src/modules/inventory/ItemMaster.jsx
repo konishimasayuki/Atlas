@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../core/auth/AuthContext.jsx";
+import CsvTools from "../../shared/csv/CsvTools.jsx";
 
 const ACCENT = "#9A5A0B";
 const yen = (n) => "¥" + (Number(n) || 0).toLocaleString();
@@ -55,6 +56,12 @@ export default function ItemMaster({ onBack }) {
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 在庫・供給管理</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>商品マスタ</h2>
+        <CsvTools rows={list} name="商品マスタ" endpoint="/api/inventory/items" onImported={reload} accent={ACCENT}
+          columns={[{ key: "code", label: "商品コード", importable: false }, { key: "name", label: "商品名", required: true }, { key: "maker", label: "メーカー" },
+            { key: "category", label: "カテゴリ" }, { key: "jan", label: "JANコード" }, { key: "supplier", label: "仕入先" },
+            { key: "location", label: "棚番" }, { key: "unit", label: "単位" }, { key: "cost", label: "原価", type: "number" },
+            { key: "price", label: "売価", type: "number" }, { key: "theoreticalStock", label: "在庫数", type: "number" },
+            { key: "reorderPoint", label: "発注点", type: "number" }, { key: "status", label: "状態" }]} />
         <button className="btn-primary sm" style={{ background: ACCENT }} onClick={openNew}>＋ 商品を追加</button>
       </div>
 

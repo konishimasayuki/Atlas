@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../core/auth/AuthContext.jsx";
+import CsvTools from "../../shared/csv/CsvTools.jsx";
 
 const ACCENT = "#1657B0";
 const STATUS_CLASS = { "取引中": "active", "見込み": "prospect", "休眠": "dormant" };
@@ -70,6 +71,11 @@ export default function CustomerLedger({ onBack }) {
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 営業管理</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>顧客台帳</h2>
+        <CsvTools rows={list} name="顧客台帳" endpoint="/api/sales/customers" onImported={load}
+          columns={[{ key: "code", label: "顧客コード", importable: false }, { key: "name", label: "顧客名", required: true }, { key: "kana", label: "フリガナ" },
+            { key: "type", label: "区分（法人/個人）" }, { key: "contactPerson", label: "担当者" }, { key: "phone", label: "電話番号" },
+            { key: "email", label: "メール" }, { key: "address", label: "住所" }, { key: "rank", label: "ランク" },
+            { key: "status", label: "状況" }, { key: "note", label: "備考" }]} />
         <button className="btn-primary sm" onClick={openNew}>＋ 顧客を追加</button>
       </div>
 
