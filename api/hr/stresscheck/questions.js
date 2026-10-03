@@ -1,6 +1,6 @@
 // api/hr/stresscheck/questions.js ── 職業性ストレス簡易調査票(簡易版・23項目)の設問と採点
 // 領域A:仕事のストレス要因 / 領域B:心身のストレス反応 / 領域C:周囲のサポート
-// 回答は 1〜4 の4件法。逆転項目(reverse)は採点時に (5 - 値) で換算。
+// 回答は 1〜4 の4件法。各設問を「点数が高いほど負担・反応・サポート不足が大きい」向きに揃えて採点する。
 
 export const SC_QUESTIONS = [
   // --- A: 仕事のストレス要因（1=そうだ 〜 4=ちがう / 多くは逆転で「高いほど負担」に揃える）---
@@ -45,10 +45,19 @@ export function scoreAnswers(answers) {
     if (!raw || raw < 1 || raw > 4) continue;
     // 「負担が高い＝点数が高い」に揃える
     let v;
-    if (q.support) v = raw;            // Cはそのまま(高い=サポート不足)
-    else if (q.positive) v = 5 - raw;  // ポジティブ項目は反転(高い=活気なし)
-    else if (q.reverse) v = raw;       // 逆転項目(負担系)
-    else v = 5 - raw;                  // 通常のポジ項目
+    if (q.area === "A") {
+      // A：選択肢は 1=そうだ … 4=ちがう
+      //  負担を表す設問(reverse) …「そうだ」ほど負担が高い → 5 - 回答
+      //  裁量・やりがいの設問     …「ちがう」ほど負担が高い → 回答そのまま
+      v = q.reverse ? 5 - raw : raw;
+    } else if (q.area === "C") {
+      v = raw;                         // C：1=非常に … 4=全くない（高い=サポート不足）
+    } else {
+      // B：選択肢は 1=ほとんどなかった … 4=ほとんどいつもあった
+      //  ストレス反応の設問(reverse) … 回答そのまま（多いほど反応が強い）
+      //  活気・体調良好の設問(positive) … 5 - 回答（少ないほど反応が強い）
+      v = q.positive ? 5 - raw : raw;
+    }
     per[q.area].push(v);
   }
   const norm = (arr) => arr.length ? Math.round(((arr.reduce((s, x) => s + x, 0) / arr.length - 1) / 3) * 100) : 0;
