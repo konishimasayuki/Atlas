@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import PrintDoc, { yenP } from "../../shared/print/PrintDoc.jsx";
 
 const ACCENT = "#9A5A0B";
 const yen = (n) => "¥" + (Number(n) || 0).toLocaleString();
@@ -128,6 +129,7 @@ function OrderEditor({ onBack }) {
 function OrderDetail({ id, onBack }) {
   const [o, setO] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [printing, setPrinting] = useState(false);
   async function load() {
     const r = await fetch(`/api/inventory/orders/${id}`, { credentials: "include" });
     const j = await r.json();
@@ -155,7 +157,38 @@ function OrderDetail({ id, onBack }) {
         <button className="back-btn" onClick={onBack}>← 一覧</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>{o.code}</h2>
         <span className={"status st-" + (STATUS_CLASS[o.status] || "prospect")} style={{ marginLeft: "auto" }}>{o.status}</span>
+        <button className="btn-primary sm" style={{ background: ACCENT }} onClick={() => setPrinting(true)}>PDF出力</button>
       </div>
+      {printing && (() => {
+        const sub = o.lines.reduce((t, l) => t + (Number(l.amount) || 0), 0);
+        const tax = Math.floor(sub * 0.1);
+        return (
+          <PrintDoc title="発 注 書" docNo={o.code} date={o.createdAt} to={`${o.supplier} 御中`}
+            fileName={`発注書_${o.code}_${o.supplier}`} onClose={() => setPrinting(false)}>
+            <div className="pd-subject">下記の通り発注いたします。</div>
+            <div className="pd-grand top"><span>ご発注金額（税込）</span><span>{yenP(sub + tax)}</span></div>
+            <table className="pd-table full">
+              <thead><tr><th>品番</th><th>品名</th><th className="num">数量</th><th className="num">単価</th><th className="num">金額</th></tr></thead>
+              <tbody>
+                {o.lines.map((l, i) => (
+                  <tr key={i}>
+                    <td>{l.code}</td><td>{l.name}</td>
+                    <td className="num">{l.qty}</td><td className="num">{yenP(l.cost)}</td><td className="num">{yenP(l.amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <table className="pd-sum">
+              <tbody>
+                <tr><td>小計（税抜）</td><td className="num">{yenP(sub)}</td></tr>
+                <tr><td>消費税（10%）</td><td className="num">{yenP(tax)}</td></tr>
+                <tr className="sum"><td>合計</td><td className="num">{yenP(sub + tax)}</td></tr>
+              </tbody>
+            </table>
+            {o.note && <div className="pd-note">備考：{o.note}</div>}
+          </PrintDoc>
+        );
+      })()}
       <div className="cust-sub" style={{ marginBottom: 12 }}>仕入先: <b>{o.supplier}</b>　合計 <b>{yen(o.total)}</b></div>
 
       <div className="exp-detail-list">

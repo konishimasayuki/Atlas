@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import PrintDoc, { yenP } from "../../shared/print/PrintDoc.jsx";
 
 const ACCENT = "#B23A48";
 const yen = (n) => "¥" + (Number(n) || 0).toLocaleString();
@@ -109,6 +110,7 @@ export default function SalaryRun({ onBack }) {
 
 function Payslip({ slip, onBack }) {
   const c = slip.calc;
+  const [printing, setPrinting] = useState(false);
   const Row = ({ l, v, strong }) => (
     <div className={"ps-row" + (strong ? " strong" : "")}><span>{l}</span><span>{yen(v)}</span></div>
   );
@@ -117,7 +119,39 @@ function Payslip({ slip, onBack }) {
       <div className="ledger-top">
         <button className="back-btn" onClick={onBack}>← 一覧</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>給与明細</h2>
+        <button className="btn-primary sm" style={{ background: ACCENT, marginLeft: "auto" }} onClick={() => setPrinting(true)}>PDF出力</button>
       </div>
+      {printing && (
+        <PrintDoc title="給与明細書" to={`${slip.name} 様`} seal={false}
+          meta={[["対象年月", slip.ym], ["社員番号", slip.code], ["所属", `${slip.department}・${slip.position}`]]}
+          fileName={`給与明細_${slip.ym}_${slip.name}`} onClose={() => setPrinting(false)}>
+          <div className="pd-2col">
+            <table className="pd-table">
+              <thead><tr><th colSpan={2}>支給</th></tr></thead>
+              <tbody>
+                <tr><td>基本給</td><td className="num">{yenP(c.base)}</td></tr>
+                {c.posA > 0 && <tr><td>役職手当</td><td className="num">{yenP(c.posA)}</td></tr>}
+                {c.otherA > 0 && <tr><td>その他手当</td><td className="num">{yenP(c.otherA)}</td></tr>}
+                {c.commute > 0 && <tr><td>通勤手当（非課税）</td><td className="num">{yenP(c.commute)}</td></tr>}
+                <tr className="sum"><td>総支給額</td><td className="num">{yenP(c.gross)}</td></tr>
+              </tbody>
+            </table>
+            <table className="pd-table">
+              <thead><tr><th colSpan={2}>控除</th></tr></thead>
+              <tbody>
+                <tr><td>健康保険</td><td className="num">{yenP(c.health)}</td></tr>
+                {c.nursing > 0 && <tr><td>介護保険</td><td className="num">{yenP(c.nursing)}</td></tr>}
+                <tr><td>厚生年金</td><td className="num">{yenP(c.pension)}</td></tr>
+                <tr><td>雇用保険</td><td className="num">{yenP(c.employment)}</td></tr>
+                <tr><td>源泉所得税</td><td className="num">{yenP(c.incomeTax)}</td></tr>
+                <tr><td>住民税</td><td className="num">{yenP(c.residentTax)}</td></tr>
+                <tr className="sum"><td>控除合計</td><td className="num">{yenP(c.deductionTotal)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="pd-grand"><span>差引支給額</span><span>{yenP(c.net)}</span></div>
+        </PrintDoc>
+      )}
       <div className="payslip">
         <div className="ps-head">
           <div><b>{slip.name}</b>　<span className="muted">{slip.code}・{slip.department}・{slip.position}</span></div>

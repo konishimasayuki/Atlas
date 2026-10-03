@@ -115,6 +115,8 @@ export function companyUserView(u, company) {
     allowedModules: allowed,
     effectiveModules: effective,
     canManageUsers: !!u.canManageUsers,
+    isActive: u.isActive !== false,
+    createdAt: u.createdAt || null,
   };
 }
 
@@ -125,6 +127,8 @@ export function safeUser(u) {
     name: u.name,
     allowedModules: u.allowedModules || [],
     canManageUsers: !!u.canManageUsers,
+    isActive: u.isActive !== false,
+    createdAt: u.createdAt || null,
   };
 }
 

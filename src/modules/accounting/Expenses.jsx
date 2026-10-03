@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../core/auth/AuthContext.jsx";
+import PrintDoc, { yenP, fmtDate } from "../../shared/print/PrintDoc.jsx";
 
 const ACCENT = "#0B6E52";
 const yen = (n) => "¥" + (Number(n) || 0).toLocaleString();
@@ -190,6 +191,7 @@ function ExpenseDetail({ id, isApprover, onBack }) {
   const [e, setE] = useState(null);
   const [busy, setBusy] = useState(false);
   const [zoom, setZoom] = useState(null);
+  const [printing, setPrinting] = useState(false);
 
   async function load() {
     const r = await fetch(`/api/accounting/expenses/${id}`, { credentials: "include" });
@@ -212,7 +214,37 @@ function ExpenseDetail({ id, isApprover, onBack }) {
         <button className="back-btn" onClick={onBack}>← 一覧</button>
         <h2 className="page-h" style={{ color: ACCENT, margin: 0 }}>{e.code} {e.title}</h2>
         <span className={"status st-" + (STATUS_CLASS[e.status] || "prospect")} style={{ marginLeft: "auto" }}>{e.status}</span>
+        <button className="btn-primary sm" style={{ background: ACCENT }} onClick={() => setPrinting(true)}>PDF出力</button>
       </div>
+      {printing && (
+        <PrintDoc title="経費精算書" docNo={e.code} seal={false}
+          meta={[["申請者", e.applicantName], ["状態", e.status]]}
+          fileName={`経費精算書_${e.code}_${e.applicantName}`} onClose={() => setPrinting(false)}>
+          <div className="pd-subject">件名：{e.title}</div>
+          <table className="pd-table full">
+            <thead><tr><th>日付</th><th>科目</th><th>支払先</th><th>摘要</th><th className="num">金額</th></tr></thead>
+            <tbody>
+              {e.lines.map((l, i) => (
+                <tr key={i}>
+                  <td>{l.date}</td><td>{l.category}</td><td>{l.payee}</td>
+                  <td>{l.description}{l.isFuel ? `（走行 ${l.distance}km）` : ""}</td>
+                  <td className="num">{yenP(l.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="pd-grand"><span>精算合計</span><span>{yenP(e.total)}</span></div>
+          {e.note && <div className="pd-note">備考：{e.note}</div>}
+          <table className="pd-stamp">
+            <thead><tr><th>申請者</th><th>承認者</th><th>経理</th></tr></thead>
+            <tbody><tr>
+              <td>{e.applicantName}</td>
+              <td>{e.approvedBy || ""}</td>
+              <td>{e.settledAt ? "精算済 " + fmtDate(e.settledAt) : ""}</td>
+            </tr></tbody>
+          </table>
+        </PrintDoc>
+      )}
       <div className="cust-sub" style={{ marginBottom: 14 }}>申請者: {e.applicantName}　合計 <b>{yen(e.total)}</b>{e.approvedBy ? `　承認: ${e.approvedBy}` : ""}</div>
 
       <div className="exp-detail-list">

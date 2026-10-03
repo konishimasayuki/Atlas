@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { MODULES } from "../modules.js";
 import UsersPage from "../settings/UsersPage.jsx";
+import CompanyProfile from "../settings/CompanyProfile.jsx";
 import { MODULE_COMPONENTS } from "../../modules/registry.js";
 
 export default function AppShell() {
@@ -54,16 +55,7 @@ function ModuleView({ moduleId, module }) {
   const { user } = useAuth();
 
   // 設定はコアが担当
-  if (moduleId === "settings") {
-    return (
-      <div className="page">
-        <h2 className="page-h" style={{ color: "#334155" }}>⑦ 設定</h2>
-        {user.canManageUsers
-          ? <UsersPage enabledModules={user.enabledModules} />
-          : <p className="muted">ユーザー管理の権限がありません。</p>}
-      </div>
-    );
-  }
+  if (moduleId === "settings") return <SettingsView user={user} />;
 
   // 各モジュール（登録済みならそのコンポーネント）
   const Comp = MODULE_COMPONENTS[moduleId];
@@ -78,6 +70,25 @@ function ModuleView({ moduleId, module }) {
         <p><b>{module.label}</b>（{module.desc}）</p>
         <p className="muted">この画面は担当者が実装します。接続仕様書の名前空間「{module.id}」で作成してください。</p>
       </div>
+    </div>
+  );
+}
+
+// ⑦設定：会社情報 / ユーザー管理
+function SettingsView({ user }) {
+  const [tab, setTab] = useState("profile");
+  return (
+    <div className="page">
+      <h2 className="page-h" style={{ color: "#334155" }}>⑦ 設定</h2>
+      <div className="tabs" style={{ marginBottom: 16 }}>
+        <button className={"tab" + (tab === "profile" ? " on" : "")} onClick={() => setTab("profile")}>会社情報</button>
+        <button className={"tab" + (tab === "users" ? " on" : "")} onClick={() => setTab("users")}>ユーザー管理</button>
+      </div>
+      {tab === "profile"
+        ? <CompanyProfile canEdit={!!user.canManageUsers} />
+        : user.canManageUsers
+          ? <UsersPage enabledModules={user.enabledModules} />
+          : <p className="muted">ユーザー管理の権限がありません。</p>}
     </div>
   );
 }
